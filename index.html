@@ -43,7 +43,6 @@
     <div class="grid" id="grid"></div>
   </div>
 
-  <!-- Модалка приза -->
   <div class="modal" id="modal">
     <h2 id="title">Приз получен!</h2>
     <div class="prize" id="prize"></div>
@@ -51,11 +50,10 @@
     <button onclick="closeModal()">Хорошо</button>
   </div>
 
-  <!-- Модалка "Мои подарки" -->
   <div class="gifts-modal" id="giftsModal">
     <h2>Твои подарки</h2>
     <div class="gifts-list" id="giftsList">
-      <p>У тебя пока нет подарков</p>
+      <p style="opacity:0.7">У тебя пока нет подарков</p>
     </div>
     <button onclick="closeGiftsModal()">Закрыть</button>
   </div>
@@ -68,26 +66,37 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNPFeM8iB45G8OzG7Phh9ekFeGk2V5IlQs63KlUQ_vIClGWTs-w7TMf-fIPVVFMJ1W/exec";
 
     const prizes = ["1000 ₽","Стикерпак 2026","7 дней Premium","Эксклюзивный аватар","500 ₽","iPhone 16 Pro Max","300 ₽","3 дня Premium","Видео-поздравление"];
-    const winner = Math.floor(Math.random,10);
+    const winner = Math.floor(Math.random() * 9);
 
     let currentGifts = [];
 
     async function loadState() {
-      const res = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "check", userId: USER_ID }), headers: { "Content-Type": "text/plain" } });
-      const data = await res.json();
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "check", userId: USER_ID }),
+          headers: { "Content-Type": "text/plain" }
+        });
+        const data = await res.json();
 
-      if (data.error) { document.getElementById("status").textContent = data.error; return; }
+        if (data.error) {
+          document.getElementById("status").textContent = data.error;
+          return;
+        }
 
-      document.getElementById("attempts").textContent = data.attempts || 0;
-      currentGifts = data.gifts || [];
+        document.getElementById("attempts").textContent = data.attempts || 0;
+        currentGifts = data.gifts || [];
 
-      if (data.attempts > 0) {
-        document.getElementById("status").textContent = "Выбери свой подарок!";
-        document.getElementById("grid").style.display = "grid";
-        createCards();
-      } else {
-        document.getElementById("status").textContent = "Попытки закончились";
-        document.getElementById("grid").style.display = "none";
+        if (data.attempts > 0) {
+          document.getElementById("status").textContent = "Выбери свой подарок!";
+          document.getElementById("grid").style.display = "grid";
+          createCards();
+        } else {
+          document.getElementById("status").textContent = "Попытки закончились";
+          document.getElementById("grid").style.display = "none";
+        }
+      } catch (e) {
+        document.getElementById("status").textContent = "Ошибка сети";
       }
     }
 
@@ -105,16 +114,25 @@
 
     async function chooseGift(card, index) {
       if (card.classList.contains("selected")) return;
+
       document.querySelectorAll(".card").forEach(c => c.classList.add("disabled"));
       card.classList.add("selected");
 
       const prize = prizes[index];
       const isMain = index === winner;
 
-      const resp = await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "claim", userId: USER_ID, prize: prize }), headers: { "Content-Type": "text/plain" } });
+      const resp = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "claim", userId: USER_ID, prize: prize }),
+        headers: { "Content-Type": "text/plain" }
+      });
       const result = await resp.json();
 
-      if (result.error) { alert("Ошибка: " + result.error); location.reload(); return; }
+      if (result.error) {
+        alert("Ошибка: " + result.error);
+        location.reload();
+        return;
+      }
 
       currentGifts = result.gifts || currentGifts;
 
@@ -132,7 +150,7 @@
 
     function showGifts() {
       const list = document.getElementById("giftsList");
-      if (currentGifts.length === 0) {
+      if (!currentGifts || currentGifts.length === 0) {
         list.innerHTML = "<p style='opacity:0.7'>У тебя пока нет подарков</p>";
       } else {
         list.innerHTML = currentGifts.map(g => `<div class="prize">${g}</div>`).join("");
