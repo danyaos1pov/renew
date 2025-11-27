@@ -16,7 +16,7 @@
     p{font-size:1.1rem;opacity:0.7;margin-bottom:20px;}
     .info{margin:15px 0;font-size:0.95rem;opacity:0.8;}
     .btn{margin-top:20px;padding:14px 32px;background:linear-gradient(90deg,#7928ff,#00e0ff);color:white;border:none;border-radius:50px;font-size:1.1rem;font-weight:600;cursor:pointer;box-shadow:0 8px 25px rgba(121,40,255,0.4);}
-    .btn:hover{transform:translateY(-3px);box-shadow:0 15px 35px rgba(121,40,255,0.6);}
+    .btn:hover{transform:translateY(-3px);}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:400px;margin:40px auto 0;display:none;}
     .card{aspect-ratio:1;background:rgba(255,255,255,0.06);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;cursor:pointer;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);transition:all 0.4s;}
     .card:hover{transform:translateY(-16px) scale(1.05);box-shadow:0 30px 60px rgba(0,0,0,0.5);}
@@ -26,7 +26,6 @@
     .modal.show,.gifts-modal.show{opacity:1;visibility:visible;}
     .modal h2,.gifts-modal h2{font-size:3.2rem;font-weight:700;margin-bottom:20px;background:linear-gradient(120deg,#ff00c8,#00ffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .prize{font-size:1.8rem;padding:18px 36px;background:rgba(255,255,255,0.08);border-radius:20px;margin:15px 0;}
-    .gifts-list{max-width:90%;text-align:center;}
     .gifts-list .prize{font-size:1.6rem;margin:12px 0;}
     .text{font-size:1.4rem;opacity:0.9;margin:20px 0 40px;}
     button{padding:18px 60px;font-size:1.3rem;font-weight:600;background:linear-gradient(90deg,#7928ff,#00e0ff);color:white;border:none;border-radius:50px;cursor:pointer;box-shadow:0 10px 30px rgba(121,40,255,0.4);}
@@ -150,7 +149,7 @@
 
     function showGifts() {
       const list = document.getElementById("giftsList");
-      if (!currentGifts || currentGifts.length === 0) {
+      if (currentGifts.length === 0) {
         list.innerHTML = "<p style='opacity:0.7'>У тебя пока нет подарков</p>";
       } else {
         list.innerHTML = currentGifts.map(g => `<div class="prize">${g}</div>`).join("");
