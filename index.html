@@ -1,554 +1,123 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ON1X VPN — Продление подписки</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-/* === ГЛОБАЛЬНЫЕ СТИЛИ И ПЕРЕМЕННЫЕ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-:root {
-    --primary-color: #007bff;
-    --secondary-color: #28a745; /* Зеленый для успеха/активности */
-    --bg-dark: #0d1117;
-    --card-bg: #161b22; /* Фон карточек */
-    --text-color: #e6edf3;
-    --accent-red: #dc3545;
-    /* === НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ТАРИФОВ === */
-    --gold-color: #ffd700;
-    --personal-color: var(--text-color);
-    --family-color: var(--secondary-color);
-    --premium-color: var(--gold-color);
-    --toggle-active-bg: #37475a;
-}
-* { 
-    box-sizing: border-box; 
-    margin: 0; 
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-}
-body { 
-    background: var(--bg-dark); 
-    color: var(--text-color); 
-    text-align: center; 
-    min-height: 100vh; 
-    padding-bottom: 50px;
-}
-a { 
-    text-decoration: none;
-    color: inherit;
-}
-
-/* === МОДАЛЬНОЕ ОКНО (ТОЧНО ИЗ ОРИГИНАЛА) === */
-#modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10002;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-#modal-overlay.visible {
-    display: flex;
-    opacity: 1;
-}
-#modal-popup {
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    width: 90%;
-    max-width: 380px;
-    text-align: center;
-    transform: scale(0.9);
-    transition: transform 0.3s cubic-bezier(0.3, 0.7, 0.4, 1.2);
-}
-#modal-overlay.visible #modal-popup {
-    transform: scale(1);
-}
-#modal-popup i {
-    font-size: 48px;
-    color: var(--primary-color);
-    margin-bottom: 15px;
-}
-#modal-title {
-    font-size: 1.5em;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: var(--text-color);
-}
-#modal-message {
-    font-size: 1em;
-    color: #b0b8c2;
-    line-height: 1.6;
-    margin-bottom: 25px;
-}
-#modal-close-button {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 0;
-    width: 100%;
-    font-size: 1em;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-#modal-close-button:hover,
-#modal-close-button:active {
-    background: #0056b3;
-}
-
-/* === СТРАНИЦА (ТОЧНО ИЗ ОРИГИНАЛА) === */
-.page {
-    position: absolute; 
-    top: 0;
-    left: 50%;
-    width: 100%;
-    max-width: 600px; 
-    padding: 20px 15px 20px 15px; 
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.4, 1), 
-                opacity 0.4s cubic-bezier(0.2, 0.8, 0.4, 1);
-    will-change: transform, opacity;
-    display: none; 
-    z-index: 10;
-    transform: translate(-50%, 0) scale(1);
-    opacity: 1;
-}
-
-/* Мобильные отступы (ТОЧНО ИЗ ОРИГИНАЛА) */
-@media (max-width: 600px) {
-    #renew {
-        padding-top: 15px;
-    }
-}
-
-.page.active {
-    transform: translate(-50%, 0) scale(1);
-    opacity: 1;
-    display: block;
-    z-index: 15;
-}
-
-/* === ЗАГОЛОВКИ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-h1 { 
-    font-size: 2.2em; 
-    margin-bottom: 5px; 
-    color: var(--primary-color);
-}
-h2 { 
-    font-size: 1.8em; 
-    margin: 0 0 20px 0; 
-    border-bottom: 2px solid rgba(255,255,255,0.1); 
-    padding-bottom: 10px;
-}
-h3,h4 { 
-    margin:15px 0; 
-}
-p { 
-    margin:10px 0; 
-    line-height:1.6; 
-    color: #b0b8c2;
-}
-
-/* === ПЕРЕКЛЮЧАТЕЛЬ ТАРИФОВ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-.tariff-toggle-inside {
-    display: flex;
-    justify-content: center;
-    gap: 5px; 
-    margin: 0 auto 15px auto;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1); 
-}
-.tariff-toggle-inside .toggle-button {
-    flex-grow: 1;
-    padding: 8px 5px;
-    border-radius: 8px; 
-    background: var(--bg-dark);
-    color: var(--text-color);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.05);
-    font-size: 0.9em;
-}
-.tariff-toggle-inside .toggle-button.active {
-    background: var(--primary-color); 
-    color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 8px rgba(0,123,255,0.5);
-}
-.tariff-toggle-inside .toggle-button:hover:not(.active),
-.tariff-toggle-inside .toggle-button:active:not(.active) {
-    background: rgba(255,255,255,0.05);
-}
-
-/* === НЕАКТИВНЫЕ ТАРИФЫ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-.tariff-content.disabled {
-    position: relative;
-    pointer-events: none;
-    opacity: 0.6;
-}
-.tariff-content.disabled::before {
-    content: "В РАЗРАБОТКЕ";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-5deg);
-    background: rgba(220, 53, 69, 0.9);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 1.5em;
-    font-weight: 800;
-    z-index: 50;
-    letter-spacing: 1px;
-    border: 3px solid white;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-}
-.tariff-toggle-inside .toggle-button.developing {
-    pointer-events: auto;
-    cursor: pointer;
-}
-
-/* === ОБЪЕДИНЕННЫЙ БЛОК ТАРИФОВ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-.compact-tariff-card {
-    background: var(--card-bg); 
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: left;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.unified-tariff-card {
-    text-align: center;
-    padding-bottom: 5px;
-}
-.unified-tariff-card .tariff-name-title {
-    display: none !important;
-}
-.unified-tariff-card .tariff-slogan {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 0.95em;
-    font-weight: 500;
-    min-height: 20px;
-    transition: color 0.3s;
-}
-.slogan-personal { color: var(--text-color) !important; } 
-.slogan-family { color: var(--family-color) !important; font-weight: 600; } 
-.slogan-premium { color: var(--premium-color) !important; font-weight: 600; } 
-.tariff-features-list-v2 {
-    padding: 10px 0;
-    margin-bottom: 0;
-    border-top: 1px solid rgba(255,255,255,0.1); 
-    padding-top: 15px;
-    display: flex;
-    justify-content: space-around; 
-    align-items: flex-start;
-    text-align: center; 
-    gap: 10px;
-}
-.tariff-features-list-v2 > div {
-    display: block;
-    flex-basis: 30%; 
-    font-size: 0.85em; 
-    color: #b0b8c2;
-    line-height: 1.3;
-}
-.tariff-features-list-v2 i {
-    color: var(--primary-color);
-    font-size: 1.6em;
-    margin: 0 auto 5px auto;
-    min-width: 0; 
-    display: block;
-}
-
-/* === БЛОК ВЫБОРА ДНЕЙ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-.pricing-card-block {
-    background: var(--card-bg);
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: left;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.tariff-days-option {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px; 
-    margin-bottom: 8px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-    border: 1px solid transparent;
-}
-.tariff-days-option:hover,
-.tariff-days-option:active {
-    background: rgba(0,0,0,0.3);
-    border-color: rgba(0,123,255,0.3);
-}
-.tariff-days-option.active {
-    background: var(--primary-color); 
-    box-shadow: 0 0 10px rgba(0,123,255,0.5);
-    border-color: var(--primary-color);
-}
-.tariff-days-option.active span {
-    font-weight: 700;
-}
-.tariff-days-option span {
-    font-weight: 600;
-}
-.option-price {
-    font-weight: 700;
-    color: var(--text-color);
-}
-.tariff-buy-button-container {
-    text-align: center;
-    padding-top: 5px;
-}
-.tariff-buy-button-container .button {
-    max-width: 100%;
-    margin: 20px auto 0;
-}
-
-/* === КНОПКИ (ТОЧНО ИЗ ОРИГИНАЛА) === */
-.button { 
-    display:block; 
-    width:100%; 
-    max-width:300px;
-    margin:20px auto; 
-    padding:12px 0;
-    border-radius: 8px;
-    background: var(--primary-color);
-    color: white; 
-    border: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-    font-weight:700;
-    transition: all 0.2s ease; 
-    cursor: pointer;
-    text-align: center;
-}
-.button:hover,
-.button:active { 
-    transform: none; 
-    background: #0056b3;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4); 
-}
-.button.disabled {
-    background: #343a40 !important;
-    color: #b0b8c2 !important;
-    border-color: transparent !important;
-    cursor: not-allowed;
-    box-shadow: none !important;
-    transform: none !important;
-    opacity: 0.7;
-}
-
-/* === АНИМАЦИЯ СПИННЕРА === */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-.spin {
-    animation: spin 1s linear infinite;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Новогодний дроп 2026</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap');
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{min-height:100vh;background:#000;color:#fff;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+    body::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#6e00ff 0%,#00d4ff 50%,transparent 70%);filter:blur(120px);opacity:0.4;animation:breathe 12s infinite alternate;}
+    @keyframes breathe{0%{transform:scale(1) translateX(-50px)}100%{transform:scale(1.3) translateX(50px)}}
+    .container{text-align:center;z-index:2;max-width:90%;}
+    h1{font-size:2.8rem;font-weight:700;background:linear-gradient(120deg,#ffffff,#a0a0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+    p{font-size:1.1rem;opacity:0.7;margin-bottom:30px;}
+    .info{font-size:0.9rem;opacity:0.6;margin-top:20px;}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:400px;margin:0 auto;}
+    .card{aspect-ratio:1;background:rgba(255,255,255,0.06);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;cursor:pointer;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);transition:all 0.4s cubic-bezier(0.25,1,0.5,1);position:relative;overflow:hidden;}
+    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent 50%);opacity:0;transition:opacity 0.4s;}
+    .card:hover{transform:translateY(-16px) scale(1.05);border-color:rgba(255,255,255,0.3);box-shadow:0 30px 60px rgba(0,0,0,0.5);}
+    .card:hover::before{opacity:1;}
+    .card.disabled{opacity:0.3;pointer-events:none;cursor:not-allowed;}
+    .card.selected{background:linear-gradient(135deg,#7928ff,#00e0ff);transform:scale(1.15);box-shadow:0 0 80px rgba(121,40,255,0.6);border:none;}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;opacity:0;visibility:hidden;transition:all 0.6s;}
+    .modal.show{opacity:1;visibility:visible;}
+    .modal h2{font-size:3.5rem;font-weight:700;margin-bottom:20px;background:linear-gradient(120deg,#ff00c8,#00ffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .modal .prize{font-size:1.8rem;margin:30px 0 50px;padding:20px 40px;background:rgba(255,255,255,0.08);border-radius:20px;backdrop-filter:blur(10px);}
+    .modal button{padding:18px 60px;font-size:1.3rem;font-weight:600;background:linear-gradient(90deg,#7928ff,#00e0ff);color:white;border:none;border-radius:50px;cursor:pointer;box-shadow:0 10px 30px rgba(121,40,255,0.4);transition:all 0.3s;}
+    .modal button:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(121,40,255,0.6);}
+  </style>
 </head>
 <body>
-<div id="app-container" style="position: relative; min-height: 100vh;">
 
-    <div id="renew" class="page active">
-        
-        <h2>Продлить подписку</h2>
-        
-        <div class="new-tariffs-container" id="renew-tariffs-container">
-            
-            <div class="tariff-content" data-tariff="personal">
-                <div class="compact-tariff-card unified-tariff-card">
-                    <h4 style="margin: 0 0 10px 0; font-size: 1.1em; font-weight: 700;">Выберите тариф</h4>
-                    <div class="tariff-toggle-inside" data-target="renew">
-                        <div class="toggle-button active" data-tariff="personal" onclick="switchRenewTariff('personal')">Личная</div>
-                        <div class="toggle-button developing" data-tariff="family" onclick="switchRenewTariff('family')">Семейная</div>
-                        <div class="toggle-button developing" data-tariff="premium" onclick="switchRenewTariff('premium')">Премиум</div>
-                    </div>
-                    <p class="tariff-slogan slogan-personal current-slogan">Идеально подходит для одного пользователя</p>
-                    <div class="tariff-features-list-v2">
-                        <div><i class="fas fa-user"></i> 3 устройства</div>
-                        <div><i class="fas fa-infinity"></i> Безлимитный интернет</div>
-                        <div><i class="fas fa-tachometer-alt"></i> Скорость до 25 Гбит/с</div>
-                    </div>
-                </div>
+  <div class="container">
+    <h1>Новогодний дроп 2026</h1>
+    <p id="status">Проверка попыток...</p>
+    <div class="info">Осталось попыток: <span id="attempts">-</span></div>
 
-                <div class="pricing-card-block">
-                    <h4 style="text-align: center; margin-top: 0; font-size: 1.1em; font-weight: 700;">Выберите срок подписки</h4>
-                    
-                    <div id="renew-days-personal" data-tariff-name="personal">
-                        <div class="tariff-days-option" data-days="30" data-link="https://t.me/on1xVPN_bot?start=c_2173534" onclick="selectRenewDay('personal', this)">
-                            <span>30 дней</span>
-                            <span class="option-price">100 руб</span>
-                        </div>
-                        <div class="tariff-days-option" data-days="60" data-link="https://t.me/on1xVPN_bot?start=c_2173536" onclick="selectRenewDay('personal', this)">
-                            <span>60 дней</span>
-                            <span class="option-price">200 руб</span>
-                        </div>
-                        <div class="tariff-days-option" data-days="90" data-link="https://t.me/on1xVPN_bot?start=c_2231867" onclick="selectRenewDay('personal', this)">
-                            <span>90 дней</span>
-                            <span class="option-price">300 руб</span>
-                        </div>
-                        <div class="tariff-days-option" data-days="180" data-link="https://t.me/on1xVPN_bot?start=c_2231869" onclick="selectRenewDay('personal', this)">
-                            <span>180 дней</span>
-                            <span class="option-price">600 руб</span>
-                        </div>
-                    </div>
+    <div class="grid" id="grid" style="display:none"></div>
+  </div>
 
-                    <div class="tariff-buy-button-container">
-                        <a href="#" id="renew-button-personal" class="button disabled">Выберите срок</a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tariff-content disabled" data-tariff="family" style="display: none;">
-                 </div>
-    
-            <div class="tariff-content disabled" data-tariff="premium" style="display: none;">
-                </div>
-    
-        </div>
-    </div>
+  <div class="modal" id="modal">
+    <h2 id="title">Приз получен!</h2>
+    <div class="prize" id="prize"></div>
+    <button onclick="Telegram.WebApp.close()">Забрать</button>
+  </div>
 
-</div> 
+  <script>
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
 
-<div id="modal-overlay">
-    <div id="modal-popup">
-        <i class="fas fa-tools"></i>
-        <h3 id="modal-title"></h3>
-        <p id="modal-message"></p>
-        <button id="modal-close-button">Понятно</button>
-    </div>
-</div>
+    const USER_ID = Telegram.WebApp.initDataUnsafe.user?.id || "test_" + Date.now();
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxO1ePhRB0jpTy1aDqdU75aMRRaSfgDN03ZSsG2yeWcko45upbc-Jwq5UntFdjkc6ATPw/exec"; // ←←←← ВСТАВЬ СЮДА!
 
-<script>
-// === ФУНКЦИИ МОДАЛЬНОГО ОКНА (ТОЧНО ИЗ ОРИГИНАЛА) ===
-const modalOverlay = document.getElementById('modal-overlay');
-const modalTitle = document.getElementById('modal-title');
-const modalMessage = document.getElementById('modal-message');
-const modalCloseButton = document.getElementById('modal-close-button');
+    const prizes = ["1000 ₽","Стикерпак 2026","7 дней Premium","Эксклюзивный аватар","500 ₽","iPhone 16 Pro Max","300 ₽","3 дня Premium","Видео-поздравление"];
+    const winner = Math.floor(Math.random() * 9);
 
-function showModalNotification(title, message) {
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    modalOverlay.classList.add('visible');
-}
+    async function checkUser() {
+      const res = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "check", userId: USER_ID }),
+        headers: { "Content-Type": "text/plain" }
+      });
+      const data = await res.json();
 
-function hideModalNotification() {
-    modalOverlay.classList.remove('visible');
-}
-
-modalCloseButton.addEventListener('click', hideModalNotification);
-modalOverlay.addEventListener('click', (event) => {
-    if (event.target === modalOverlay) {
-        hideModalNotification();
-    }
-});
-
-// === TELEGRAM WEBAPP: Отключение сворачивания + Кнопка "Назад" (ТОЧНО ИЗ ОРИГИНАЛА) ===
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        const WebApp = Telegram.WebApp;
-        WebApp.ready();
-        if (WebApp.disableVerticalSwipes) {
-            WebApp.disableVerticalSwipes();
-        }
-        if (WebApp.BackButton) {
-            WebApp.BackButton.show();
-            WebApp.BackButton.onClick(() => WebApp.close());
-        }
-    }
-});
-
-// === ФУНКЦИИ ДЛЯ ПРОДЛЕНИЯ (ТОЧНО ИЗ ОРИГИНАЛА) ===
-function switchRenewTariff(tariffName) {
-    if (tariffName === 'family' || tariffName === 'premium') {
-        const readableName = tariffName === 'family' ? 'Семейный' : 'Премиум';
-        showModalNotification(`Тариф в разработке`, `Тариф «${readableName}» скоро будет доступен. Мы уже работаем над этим!`);
+      if (data.error) {
+        document.getElementById("status").textContent = data.error;
         return;
+      }
+
+      document.getElementById("attempts").textContent = data.attempts || 0;
+
+      if (data.attempts > 0 && !data.alreadyWon) {
+        document.getElementById("status").textContent = "Выбери свой подарок!";
+        document.getElementById("grid").style.display = "grid";
+        createCards();
+      } else {
+        document.getElementById("status").textContent = data.alreadyWon 
+          ? "Ты уже получил приз!" 
+          : "Попытки закончились :(";
+      }
     }
 
-    document.querySelectorAll('#renew-tariffs-container .tariff-content').forEach(content => {
-        content.style.display = 'none';
-    });
-    const activeContent = document.querySelector(`#renew-tariffs-container .tariff-content[data-tariff="${tariffName}"]`);
-    if (activeContent) {
-        activeContent.style.display = 'block';
-        document.querySelectorAll('#renew-tariffs-container .toggle-button').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.tariff === tariffName) {
-                btn.classList.add('active');
-            }
-        });
-        document.querySelectorAll(`#renew-days-${tariffName} .tariff-days-option`).forEach(option => {
-            option.classList.remove('active');
-        });
-        const renewButton = document.getElementById(`renew-button-${tariffName}`);
-        if (renewButton) {
-            renewButton.classList.add('disabled');
-            renewButton.href = '#';
-            renewButton.innerHTML = 'Выберите срок';
-        }
+    function createCards() {
+      const grid = document.getElementById("grid");
+      for (let i = 0; i < 9; i++) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.textContent = 'Gift';
+        card.onclick = () => selectPrize(card, i);
+        grid.appendChild(card);
+      }
     }
-}
 
-function selectRenewDay(tariffName, selectedOption) {
-    document.querySelectorAll(`#renew-days-${tariffName} .tariff-days-option`).forEach(option => {
-        option.classList.remove('active');
-    });
-    selectedOption.classList.add('active');
-    const renewButton = document.getElementById(`renew-button-${tariffName}`);
-    if (renewButton) {
-        renewButton.classList.remove('disabled');
-        renewButton.href = selectedOption.dataset.link;
-        renewButton.innerHTML = 'Продлить';
+    async function selectPrize(card, index) {
+      if (card.classList.contains('selected')) return;
 
-        renewButton.onclick = null;
+      document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
+      card.classList.add('selected');
 
-        renewButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            const url = this.href;
+      const prize = prizes[index];
+      const isMain = index === winner;
 
-            window.location.href = url;
+      // Отправляем приз в таблицу
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "claim", userId: USER_ID, prize: prize }),
+        headers: { "Content-Type": "text/plain" }
+      });
 
-            setTimeout(() => {
-                if (typeof Telegram !== 'undefined' && Telegram.WebApp && Telegram.WebApp.close) {
-                    Telegram.WebApp.close();
-                }
-            }, 300);
-        });
+      setTimeout(() => {
+        document.getElementById("title").textContent = isMain ? "Главный приз!" : "Приз твой!";
+        document.getElementById("prize").textContent = prize + (isMain ? " Jackpot" : "");
+        document.getElementById("modal").classList.add("show");
+      }, 800);
     }
-}
 
-// Инициализация (ТОЧНО ИЗ ОРИГИНАЛА)
-switchRenewTariff('personal');
-
-// Запрет контекстного меню (ТОЧНО ИЗ ОРИГИНАЛА)
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-});
-</script>
+    // Запускаем проверку
+    checkUser();
+  </script>
 </body>
 </html>
