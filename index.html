@@ -11,21 +11,21 @@
     body{min-height:100vh;background:#000;color:#fff;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;position:relative;}
     body::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#6e00ff 0%,#00d4ff 50%,transparent 70%);filter:blur(120px);opacity:0.4;animation:breathe 12s infinite alternate;}
     @keyframes breathe{0%{transform:scale(1)}100%{transform:scale(1.3)}}
-    .container{text-align:center;z-index:2;max-width:90%;padding:20px;}
+    .container{text-align:center;z-index:2;padding:20px;max-width:90%;}
     h1{font-size:2.8rem;font-weight:700;background:linear-gradient(120deg,#fff,#a0a0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
     p{font-size:1.1rem;opacity:0.7;margin-bottom:30px;}
     .info{font-size:0.95rem;opacity:0.7;margin-top:20px;}
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:400px;margin:0 auto;display:none;margin-top:40px;}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:400px;margin:40px auto 0;display:none;}
     .card{aspect-ratio:1;background:rgba(255,255,255,0.06);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:4rem;cursor:pointer;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);transition:all 0.4s cubic-bezier(0.25,1,0.5,1);position:relative;overflow:hidden;}
     .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent 50%);opacity:0;transition:opacity 0.4s;}
     .card:hover{transform:translateY(-16px) scale(1.05);border-color:rgba(255,255,255,0.3);box-shadow:0 30px 60px rgba(0,0,0,0.5);}
     .card:hover::before{opacity:1;}
-    .card.disabled{opacity:0.3;pointer-events:none;cursor:not-allowed;}
+    .card.disabled{opacity:0.3;pointer-events:none;}
     .card.selected{background:linear-gradient(135deg,#7928ff,#00e0ff);transform:scale(1.15);box-shadow:0 0 80px rgba(121,40,255,0.6);}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(20px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;opacity:0;visibility:hidden;transition:all 0.6s;}
     .modal.show{opacity:1;visibility:visible;}
     .modal h2{font-size:3.2rem;font-weight:700;margin-bottom:20px;background:linear-gradient(120deg,#ff00c8,#00ffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .modal .prize{font-size:1.8rem;padding:18px 36px;background:rgba(255,255,255,0.08);border-radius:20px;margin-bottom:20px;}
+    .modal .prize{font-size:1.8rem;padding:18px 36px;background:rgba(255,255,255,0.08);border-radius:20px;margin:20px 0;}
     .modal .text{font-size:1.4rem;opacity:0.9;margin-bottom:40px;}
     .modal button{padding:18px 60px;font-size:1.3rem;font-weight:600;background:linear-gradient(90deg,#7928ff,#00e0ff);color:white;border:none;border-radius:50px;cursor:pointer;box-shadow:0 10px 30px rgba(121,40,255,0.4);transition:0.3s;}
     .modal button:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(121,40,255,0.6);}
@@ -35,16 +35,16 @@
 
   <div class="container">
     <h1>Новогодний дроп 2026</h1>
-    <p id="status">Проверка доступа...</p>
+    <p id="status">Загрузка...</p>
     <div class="info">Осталось попыток: <strong id="attempts">-</strong></div>
     <div class="grid" id="grid"></div>
   </div>
 
   <div class="modal" id="modal">
     <h2 id="title">Приз получен!</h2>
-    <div class="prize" id="prize">iPhone 16 Pro Max</div>
+    <div class="prize" id="prize"></div>
     <div class="text">Ожидайте получения подарка</div>
-    <button id="okButton">Хорошо</button>
+    <button id="okBtn">Хорошо</button>
   </div>
 
   <script>
@@ -55,12 +55,13 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNPFeM8iB45G8OzG7Phh9ekFeGk2V5IlQs63KlUQ_vIClGWTs-w7TMf-fIPVVFMJ1W/exec";
 
     const prizes = [
-      "1000 ₽", "Стикерпак 2026", "7 дней Premium", "Эксклюзивный аватар",
-      "500 ₽", "iPhone 16 Pro Max", "300 ₽", "3 дня Premium", "Видео-поздравление"
+      "1000 ₽","Стикерпак 2026","7 дней Premium","Эксклюзивный аватар",
+      "500 ₽","iPhone 16 Pro Max","300 ₽","3 дня Premium","Видео-поздравление"
     ];
     const winner = Math.floor(Math.random() * 9);
 
-    async function init() {
+    // === Основная проверка и отрисовка ===
+    async function loadState() {
       try {
         const res = await fetch(SCRIPT_URL, {
           method: "POST",
@@ -74,7 +75,7 @@
           return;
         }
 
-        document.getElementById("attempts").textContent = data.attempts;
+        document.getElementById("attempts").textContent = data.attempts ?? 0;
 
         if (data.attempts > 0 && !data.hasPrize) {
           document.getElementById("status").textContent = "Выбери свой подарок!";
@@ -82,11 +83,12 @@
           createCards();
         } else {
           document.getElementById("status").textContent = data.hasPrize 
-            ? "Ты уже забрал свой приз!" 
+            ? "Ты уже получил приз!" 
             : "Попытки закончились";
+          document.getElementById("grid").style.display = "none";
         }
       } catch (e) {
-        document.getElementById("status").textContent = "Ошибка подключения";
+        document.getElementById("status").textContent = "Ошибка соединения";
       }
     }
 
@@ -94,53 +96,53 @@
       const grid = document.getElementById("grid");
       grid.innerHTML = "";
       for (let i = 0; i < 9; i++) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.textContent = 'Gift';
-        card.onclick = () => selectPrize(card, i);
+        const card = document.createElement("div");
+        card.className = "card";
+        card.textContent = "Gift";
+        card.onclick = () => chooseGift(card, i);
         grid.appendChild(card);
       }
     }
 
-    async function selectPrize(card, index) {
-      if (card.classList.contains('selected')) return;
+    // === Выбор подарка ===
+    async function chooseGift(card, index) {
+      if (card.classList.contains("selected")) return;
 
-      // Блокируем все карточки
-      document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
-      card.classList.add('selected');
+      // Блокируем всё
+      document.querySelectorAll(".card").forEach(c => c.classList.add("disabled"));
+      card.classList.add("selected");
 
       const prize = prizes[index];
       const isMain = index === winner;
 
-      // Сразу записываем приз в таблицу
-      try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify({ action: "claim", userId: USER_ID, prize: prize }),
-          headers: { "Content-Type": "text/plain" }
-        });
-      } catch (e) {
-        alert("Ошибка сохранения приза");
+      // Сразу отправляем в таблицу
+      const resp = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "claim", userId: USER_ID, prize: prize }),
+        headers: { "Content-Type": "text/plain" }
+      });
+      const result = await resp.json();
+
+      if (result.error) {
+        alert("Ошибка: " + result.error);
+        location.reload();
         return;
       }
 
-      // Показываем результат
-      setTimeout(() => {
-        document.getElementById("title").textContent = isMain ? "Главный приз твой!" : "Приз получен!";
-        document.getElementById("prize").textContent = prize + (isMain ? " Jackpot" : "");
-        document.getElementById("modal").classList.add("show");
-      }, 800);
+      // Показываем модалку
+      document.getElementById("title").textContent = isMain ? "Главный приз твой!" : "Приз получен!";
+      document.getElementById("prize").textContent = prize + (isMain ? " Jackpot" : "");
+      document.getElementById("modal").classList.add("show");
     }
 
-    // Кнопка "Хорошо" — закрывает модалку и обновляет интерфейс
-    document.getElementById("okButton").onclick = () => {
+    // Кнопка «Хорошо» — закрывает модалку и полностью обновляет состояние
+    document.getElementById("okBtn").onclick = () => {
       document.getElementById("modal").classList.remove("show");
-      document.getElementById("grid").style.display = "none";
-      init(); // Обновляем статус и попытки
+      loadState(); // ← полное обновление (попытки, статус, карточки)
     };
 
     // Старт
-    init();
+    loadState();
   </script>
 </body>
 </html>
