@@ -3,175 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Новогодний VPN-подарок 2025</title>
+  <title>Новогодний VPN-подарок</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      min-height: 100vh;
+    body { 
+      min-height:100vh; background:#0a001f; color:#fff; 
+      font-family:system-ui,-apple-system,sans-serif; padding:20px 15px;
       background: radial-gradient(circle at top, #0f0c29, #030014);
-      color: #fff;
-      font-family: system-ui, sans-serif;
-      padding: 15px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
     }
-    .snow { position: absolute; top: -10px; font-size: 1.4rem; animation: fall linear infinite; pointer-events: none; opacity: 0.8; }
-    @keyframes fall { to { transform: translateY(100vh); opacity: 0; } }
+    .snow { position:fixed; top:-20px; font-size:1.5rem; pointer-events:none; animation:fall linear infinite; }
+    @keyframes fall { to { transform:translateY(110vh); opacity:0; } }
 
-    h1 { font-size: 2.4rem; text-align: center; background: linear-gradient(90deg, #00ff88, #00d4ff, #ff00aa); -webkit-background-clip: text; color: transparent; }
-    .info { margin: 15px 0; padding: 14px; background: rgba(0,255,136,0.15); border: 1px solid #00ff88; border-radius: 12px; text-align: center; }
-    .error { background: rgba(255,0,0,0.2); border-color: #ff4757; color: #ff6b6b; }
+    h1 { font-size:2.4rem; text-align:center; background:linear-gradient(90deg,#00ff88,#00d4ff,#ff00aa); -webkit-background-clip:text; color:transparent; }
+    .info { padding:14px; background:rgba(0,255,136,0.15); border:1px solid #00ff88; border-radius:12px; text-align:center; margin:15px 0; }
+    .btn { padding:12px 28px; border:none; border-radius:50px; font-weight:600; cursor:pointer; margin:8px; }
+    .btn-p { background:#00ff88; color:#000; }
+    .btn-s { background:transparent; border:2px solid #00ff88; color:#00ff88; }
 
-    .btn { padding: 12px 24px; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; margin: 8px; }
-    .btn-primary { background: linear-gradient(90deg, #00ff88, #00ffaa); color: #000; }
-    .btn-secondary { background: transparent; border: 2px solid #00ff88; color: #00ff88; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:460px; margin:30px auto; }
+    .ball { aspect-ratio:1; position:relative; cursor:pointer; transform-style:preserve-3d; transition:0.8s; }
+    .ball.disabled { opacity:0.4; pointer-events:none; }
+    .ball:hover:not(.disabled) { transform:scale(1.1) translateY(-10px); }
+    .ball.opened { transform:rotateY(180deg) scale(1.15); }
 
-    .grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; max-width: 460px; margin: 20px auto; }
-    .ball { aspect-ratio: 1; position: relative; cursor: pointer; transform-style: preserve-3d; transition: all 0.8s; }
-    .ball.disabled { opacity: 0.4; pointer-events: none; }
-    .ball:hover:not(.disabled) { transform: translateY(-10px) scale(1.1); }
-    .ball.opened { transform: rotateY(180deg) scale(1.15); }
+    .face { position:absolute; inset:0; border-radius:50%; backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 0 30px rgba(0,255,136,0.5); }
+    .front { background:radial-gradient(circle at 30% 30%, #ff006e, #6600ff, #00ff88); }
+    .back { background:#000; transform:rotateY(180deg); border:3px solid #00ff88; }
+    .cap { position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:32%; height:22px; background:#ffd700; border-radius:12px 12px 0 0; }
+    .thread { position:absolute; top:-45px; left:50%; width:5px; height:45px; background:#fff; transform:translateX(-50%); }
 
-    .face { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,255,136,0.4); }
-    .front { background: radial-gradient(circle at 30% 30%, #ff006e, #6600ff, #00ff88); }
-    .back { background: #000; transform: rotateY(180deg); border: 3px solid #00ff88; }
-    .cap { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 30%; height: 20px; background: #ffd700; border-radius: 10px 10px 0 0; }
-    .thread { position: absolute; top: -40px; left: 50%; width: 4px; height: 40px; background: linear-gradient(#ffd700, #fff); transform: translateX(-50%); }
-
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.4s; z-index: 100; }
-    .modal.show { opacity: 1; visibility: visible; }
-    .modal-content { background: linear-gradient(135deg, #0f0c29, #302b63); padding: 40px 30px; border-radius: 24px; text-align: center; max-width: 90%; border: 1px solid #00ff88; box-shadow: 0 0 40px rgba(0,255,136,0.3); transform: scale(0.8); transition: 0.5s; }
-    .modal.show .modal-content { transform: scale(1); }
+    .modal { position:fixed; inset:0; background:rgba(0,0,0,0.95); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:0.4s; z-index:999; }
+    .modal.show { opacity:1; visibility:visible; }
+    .mc { background:#1a0033; padding:40px; border-radius:24px; text-align:center; border:1px solid #00ff88; max-width:90%; box-shadow:0 0 40px rgba(0,255,136,0.4); transform:scale(0.8); transition:0.5s; }
+    .modal.show .mc { transform:scale(1); }
   </style>
 </head>
 <body>
 
   <h1>Новогодний VPN-подарок</h1>
-  <div class="info" id="info">Загрузка данных...</div>
-
+  <div class="info" id="info">Загрузка...</div>
   <div style="text-align:center">
-    <button class="btn btn-secondary" onclick="showGifts()">Мои подарки</button>
+    <button class="btn btn-s" onclick="showGifts()">Мои подарки</button>
   </div>
 
   <div class="grid" id="grid"></div>
 
   <!-- Выигрыш -->
-  <div class="modal" id="winModal" onclick="this.classList.remove('show')">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <div style="font-size:5rem" id="winEmoji">Gift</div>
-      <h2 style="background:linear-gradient(90deg,#00ff88,#00d4ff);-webkit-background-clip:text;color:transparent" id="winTitle"></h2>
-      <button class="btn btn-primary" onclick="closeAndReload()">Забрать и обновить</button>
-    </div>
-  </div>
+  <div class="modal" id="win"><div class="mc" onclick="event.stopPropagation()">
+    <div style="font-size:5rem" id="emoji">Gift</div>
+    <h2 style="background:linear-gradient(90deg,#00ff88,#00d4ff);-webkit-background-clip:text;color:transparent;margin:15px 0" id="gift"></h2>
+    <button class="btn btn-p" onclick="closeWin()">Забрать и обновить</button>
+  </div></div>
 
-  <!-- Мои подарки -->
-  <div class="modal" id="giftsModal" onclick="this.classList.remove('show')">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <h2 style="color:#00ff88">Твои подарки</h2>
-      <div id="giftsList" style="margin:20px 0; text-align:left">Загрузка...</div>
-      <button class="btn btn-primary" onclick="this.parentNode.parentNode.parentNode.classList.remove('show')">Закрыть</button>
-    </div>
-  </div>
+  <!-- Подарки -->
+  <div class="modal" id="gifts"><div class="mc" onclick="event.stopPropagation()">
+    <h2 style="color:#00ff88">Твои подарки</h2>
+    <div id="list" style="margin:20px 0; text-align:left"></div>
+    <button class="btn btn-p" onclick="document.getElementById('gifts').classList.remove('show')">Закрыть</button>
+  </div></div>
 
   <script>
+    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNPFeM8iB45G8OzG7Phh9ekFeGk2V5IlQs63KlUQ_vIClGWTs-w7TMf-fIPVVFMJ1W/exec";
-    let userData = { limit: 1, used: 0, gifts: [] };
-    let userId = "test_" + Date.now();
+    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    if (Telegram.WebApp.initDataUnsafe?.user?.id) {
-      userId = Telegram.WebApp.initDataUnsafe.user.id;
-    }
+
+    const userId = Telegram.WebApp.initDataUnsafe?.user?.id || "test" + Date.now();
+    let user = {limit:1, used:0, gifts:[]};
 
     const prizes = ["VPN навсегда","VPN на 3 года","VPN на 2 года","VPN на 1 год","VPN на 6 месяцев","VPN на 3 месяца","VPN на 1 месяц","VPN на 2 недели","VPN на 7 дней"];
-    const emojis = ["Permanent","3 года","2 года","1 год","6 мес","3 мес","1 мес","2 нед","7 дней"];
+    const emojiList = ["Permanent","3 года","2 года","1 год","6 мес","3 мес","1 мес","2 нед","7 дней"];
 
     async function load() {
       try {
         const r = await fetch(`${SCRIPT_URL}?action=get&uid=${userId}`);
-        const data = await r.json();
-        if (data.error) throw new Error(data.error);
-
-        if (data.status === "new") {
-          userData = { limit: 1, used: 0, gifts: [] };
-          document.getElementById("info").textContent = "Тебе доступна 1 попытка!";
+        const d = await r.json();
+        if (d.status === "new") {
+          user = {limit:1, used:0, gifts:[]};
+          document.getElementById("info").innerHTML = "Тебе доступна <b>1 попытка</b>!";
         } else {
-          userData = { limit: data.limit, used: data.used, gifts: data.gifts };
-          const left = data.limit - data.used;
-          document.getElementById("info").textContent = left > 0 ? `Осталось попыток: ${left}` : "Попытки закончились";
+          user = {limit:d.limit, used:d.used, gifts:d.gifts};
+          const left = d.limit - d.used;
+          document.getElementById("info").innerHTML = left > 0 ? `Осталось попыток: <b>${left}</b>` : "Попытки закончились";
         }
-        renderBalls();
-      } catch (e) {
-        document.getElementById("info").className = "info error";
-        document.getElementById("info").textContent = "Ошибка: " + e.message;
-        console.error(e);
+        render();
+      } catch(e) {
+        document.getElementById("info").innerHTML = "Ошибка сети. Попробуй позже.";
       }
     }
 
-    function renderBalls() {
-      const grid = document.getElementById("grid");
-      grid.innerHTML = "";
-      const canPlay = userData.used < userData.limit;
-
-      for (let i = 0; i < 9; i++) {
+    function render() {
+      const g = document.getElementById("grid");
+      g.innerHTML = "";
+      const can = user.used < user.limit;
+      for(let i=0; i<9; i++){
         const b = document.createElement("div");
-        b.className = "ball" + (!canPlay ? " disabled" : "");
-        b.innerHTML = `
-          <div class="face front"><div class="thread"></div><div class="cap"></div></div>
-          <div class="face back"><div style="font-size:2.8rem">${emojis[i]}</div><div>${prizes[i]}</div></div>
-        `;
-        if (canPlay) {
-          b.onclick = () => openBall(i, b);
-        }
-        grid.appendChild(b);
+        b.className = "ball" + (!can?" disabled":"");
+        b.innerHTML = `<div class="face front"><div class="thread"></div><div class="cap"></div></div>
+                       <div class="face back"><div style="font-size:2.8rem">${emojiList[i]}</div><div>${prizes[i]}</div></div>`;
+        if(can) b.onclick = () => play(i, b);
+        g.appendChild(b);
       }
     }
 
-    async function openBall(i, el) {
-      if (userData.used >= userData.limit) return;
+    async function play(i, el) {
       el.classList.add("opened");
-
       const gift = prizes[i];
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ action: "save", uid: userId, gift: gift }),
-        headers: { "Content-Type": "text/plain" }
-      });
-
-      document.getElementById("winEmoji").textContent = emojis[i];
-      document.getElementById("winTitle").textContent = gift;
-      document.getElementById("winModal").classList.add("show");
+      await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"save", uid:userId, gift:gift})});
+      document.getElementById("emoji").textContent = emojiList[i];
+      document.getElementById("gift").textContent = gift;
+      document.getElementById("win").classList.add("show");
     }
 
-    function closeAndReload() {
-      document.getElementById("winModal").classList.remove("show");
-      setTimeout(() => location.reload(), 600);
+    function closeWin() {
+      document.getElementById("win").classList.remove("show");
+      setTimeout(()=>location.reload(), 500);
     }
 
     function showGifts() {
-      const list = document.getElementById("giftsList");
-      if (userData.gifts.length === 0) {
-        list.innerHTML = "<i>Пока нет выигрышей</i>";
-      } else {
-        list.innerHTML = userData.gifts.map(g => `<div style="background:rgba(0,255,136,0.1);padding:12px;margin:8px 0;border-radius:8px;border-left:4px solid #00ff88">${g}</div>`).join("");
+      const l = document.getElementById("list");
+      if(user.gifts.length===0){
+        l.innerHTML = "<i>Пока нет выигрышей</i>";
+      }else{
+        l.innerHTML = user.gifts.map(g=>`<div style="background:rgba(0,255,136,0.15);padding:12px;margin:8px 0;border-radius:8px;border-left:4px solid #00ff88">${g}</div>`).join("");
       }
-      document.getElementById("giftsModal").classList.add("show");
+      document.getElementById("gifts").classList.add("show");
     }
 
-    // Снежинки
-    setInterval(() => {
-      const s = document.createElement("div");
-      s.className = "snow";
-      s.textContent = ["Snowflake","Snowflake","Star"][Math.random()*3|0];
-      s.style.left = Math.random()*100+"vw";
-      s.style.animationDuration = 6+Math.random()*6+"s";
+    // Снег
+    setInterval(()=>{ 
+      const s=document.createElement("div"); 
+      s.className="snow"; 
+      s.textContent=["Snowflake","Snowflake","Star"][Math.random()*3|0];
+      s.style.left=Math.random()*100+"vw";
+      s.style.animationDuration=5+Math.random()*7+"s";
       document.body.appendChild(s);
-      setTimeout(() => s.remove(), 12000);
-    }, 300);
+      setTimeout(()=>s.remove(),12000);
+    },300);
 
     load();
   </script>
