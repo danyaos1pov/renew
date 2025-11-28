@@ -1,337 +1,179 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Новогодний VPN-подарок 2025</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            min-height: 100vh;
-            background: radial-gradient(circle at top, #0f0c29, #030014);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-            position: relative;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Новогодний VPN-подарок 2025</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #0f0c29, #030014);
+      color: #fff;
+      font-family: system-ui, sans-serif;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .snow { position: absolute; top: -10px; font-size: 1.4rem; animation: fall linear infinite; pointer-events: none; opacity: 0.8; }
+    @keyframes fall { to { transform: translateY(100vh); opacity: 0; } }
 
-        .snow { position: absolute; top: -10px; color: #fff; font-size: 1.2rem; animation: fall linear infinite; pointer-events: none; }
-        @keyframes fall { to { transform: translateY(100vh); opacity: 0; } }
+    h1 { font-size: 2.4rem; text-align: center; background: linear-gradient(90deg, #00ff88, #00d4ff, #ff00aa); -webkit-background-clip: text; color: transparent; }
+    .info { margin: 15px 0; padding: 14px; background: rgba(0,255,136,0.15); border: 1px solid #00ff88; border-radius: 12px; text-align: center; }
+    .error { background: rgba(255,0,0,0.2); border-color: #ff4757; color: #ff6b6b; }
 
-        .header {
-            text-align: center;
-            margin: 20px 0 30px;
-            z-index: 10;
-        }
-        h1 {
-            font-size: 2.4rem;
-            background: linear-gradient(90deg, #00ff88, #00d4ff, #ff00aa);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        .info {
-            margin: 15px 0;
-            padding: 12px;
-            background: rgba(0,255,136,0.1);
-            border: 1px solid #00ff88;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 1.1rem;
-        }
+    .btn { padding: 12px 24px; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; margin: 8px; }
+    .btn-primary { background: linear-gradient(90deg, #00ff88, #00ffaa); color: #000; }
+    .btn-secondary { background: transparent; border: 2px solid #00ff88; color: #00ff88; }
 
-        .buttons {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .btn-primary {
-            background: linear-gradient(90deg, #00ff88, #00ffaa);
-            color: #000;
-        }
-        .btn-secondary {
-            background: transparent;
-            border: 2px solid #00ff88;
-            color: #00ff88;
-        }
+    .grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; max-width: 460px; margin: 20px auto; }
+    .ball { aspect-ratio: 1; position: relative; cursor: pointer; transform-style: preserve-3d; transition: all 0.8s; }
+    .ball.disabled { opacity: 0.4; pointer-events: none; }
+    .ball:hover:not(.disabled) { transform: translateY(-10px) scale(1.1); }
+    .ball.opened { transform: rotateY(180deg) scale(1.15); }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-            max-width: 460px;
-            width: 100%;
-            margin: 0 auto;
-        }
+    .face { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,255,136,0.4); }
+    .front { background: radial-gradient(circle at 30% 30%, #ff006e, #6600ff, #00ff88); }
+    .back { background: #000; transform: rotateY(180deg); border: 3px solid #00ff88; }
+    .cap { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 30%; height: 20px; background: #ffd700; border-radius: 10px 10px 0 0; }
+    .thread { position: absolute; top: -40px; left: 50%; width: 4px; height: 40px; background: linear-gradient(#ffd700, #fff); transform: translateX(-50%); }
 
-        .ball {
-            aspect-ratio: 1;
-            position: relative;
-            cursor: pointer;
-            transform-style: preserve-3d;
-            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .ball.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
-        .ball:hover:not(.disabled) { transform: translateY(-10px) scale(1.08); }
-        .ball.opened { transform: rotateY(180deg) scale(1.15); }
-
-        .face {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0,255,136,0.4), 0 15px 35px rgba(0,0,0,0.6);
-        }
-        .front {
-            background: radial-gradient(circle at 30% 30%, #ff0066, #6600ff, #00ff88);
-            animation: shine 6s infinite;
-        }
-        .back {
-            background: linear-gradient(135deg, #1a0033, #000);
-            transform: rotateY(180deg);
-            flex-direction: column;
-            gap: 10px;
-            padding: 20px;
-            border: 2px solid #00ff88;
-        }
-        .cap { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 30%; height: 20px; background: #ffd700; border-radius: 10px 10px 0 0; }
-        .thread { position: absolute; top: -40px; left: 50%; width: 4px; height: 40px; background: linear-gradient(to top, #ffd700, #fff); transform: translateX(-50%); }
-        @keyframes shine { 0%,100% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } }
-
-        .modal, .gifts-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.92);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.5s;
-            z-index: 100;
-        }
-        .modal.show, .gifts-modal.show { opacity: 1; visibility: visible; }
-        .modal-content {
-            background: linear-gradient(135deg, #0f0c29, #302b63);
-            padding: 40px 30px;
-            border-radius: 24px;
-            text-align: center;
-            max-width: 90%;
-            border: 1px solid #00ff88;
-            box-shadow: 0 0 40px rgba(0,255,136,0.3);
-            transform: scale(0.8);
-            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .modal.show .modal-content, .gifts-modal.show .modal-content { transform: scale(1); }
-
-        .prize-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #00ff88, #00d4ff);
-            -webkit-background-clip: text;
-            color: transparent;
-            margin: 15px 0;
-        }
-
-        .gifts-list {
-            margin: 20px 0;
-            display: grid;
-            gap: 12px;
-            font-size: 1.2rem;
-        }
-        .gift-item {
-            padding: 12px;
-            background: rgba(0,255,136,0.1);
-            border-radius: 12px;
-            border-left: 4px solid #00ff88;
-        }
-        .no-gifts { opacity: 0.7; font-style: italic; }
-    </style>
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.4s; z-index: 100; }
+    .modal.show { opacity: 1; visibility: visible; }
+    .modal-content { background: linear-gradient(135deg, #0f0c29, #302b63); padding: 40px 30px; border-radius: 24px; text-align: center; max-width: 90%; border: 1px solid #00ff88; box-shadow: 0 0 40px rgba(0,255,136,0.3); transform: scale(0.8); transition: 0.5s; }
+    .modal.show .modal-content { transform: scale(1); }
+  </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>Новогодний VPN-подарок</h1>
-        <div class="info" id="attempts-info">Загрузка...</div>
+  <h1>Новогодний VPN-подарок</h1>
+  <div class="info" id="info">Загрузка данных...</div>
+
+  <div style="text-align:center">
+    <button class="btn btn-secondary" onclick="showGifts()">Мои подарки</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <!-- Выигрыш -->
+  <div class="modal" id="winModal" onclick="this.classList.remove('show')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div style="font-size:5rem" id="winEmoji">Gift</div>
+      <h2 style="background:linear-gradient(90deg,#00ff88,#00d4ff);-webkit-background-clip:text;color:transparent" id="winTitle"></h2>
+      <button class="btn btn-primary" onclick="closeAndReload()">Забрать и обновить</button>
     </div>
+  </div>
 
-    <div class="buttons">
-        <button class="btn btn-secondary" onclick="showGifts()">Мои подарки</button>
+  <!-- Мои подарки -->
+  <div class="modal" id="giftsModal" onclick="this.classList.remove('show')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <h2 style="color:#00ff88">Твои подарки</h2>
+      <div id="giftsList" style="margin:20px 0; text-align:left">Загрузка...</div>
+      <button class="btn btn-primary" onclick="this.parentNode.parentNode.parentNode.classList.remove('show')">Закрыть</button>
     </div>
+  </div>
 
-    <div class="grid" id="grid"></div>
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNPFeM8iB45G8OzG7Phh9ekFeGk2V5IlQs63KlUQ_vIClGWTs-w7TMf-fIPVVFMJ1W/exec";
+    let userData = { limit: 1, used: 0, gifts: [] };
+    let userId = "test_" + Date.now();
 
-    <!-- Модалка выигрыша -->
-    <div class="modal" id="winModal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div style="font-size:5rem" id="winEmoji">Trophy</div>
-            <div class="prize-title" id="winTitle">Загрузка...</div>
-            <p>Поздравляем! Это твой подарок!</p>
-            <button class="btn btn-primary" onclick="closeAndReload()">Забрать</button>
-        </div>
-    </div>
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+    if (Telegram.WebApp.initDataUnsafe?.user?.id) {
+      userId = Telegram.WebApp.initDataUnsafe.user.id;
+    }
 
-    <!-- Модалка "Мои подарки" -->
-    <div class="gifts-modal" id="giftsModal" onclick="this.classList.remove('show')">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h2 style="margin-bottom:20px; color:#00ff88">Твои подарки</h2>
-            <div class="gifts-list" id="giftsList">
-                <div class="no-gifts">У тебя пока нет подарков</div>
-            </div>
-            <button class="btn btn-primary" style="margin-top:20px" onclick="document.getElementById('giftsModal').classList.remove('show')">
-                Закрыть
-            </button>
-        </div>
-    </div>
+    const prizes = ["VPN навсегда","VPN на 3 года","VPN на 2 года","VPN на 1 год","VPN на 6 месяцев","VPN на 3 месяца","VPN на 1 месяц","VPN на 2 недели","VPN на 7 дней"];
+    const emojis = ["Permanent","3 года","2 года","1 год","6 мес","3 мес","1 мес","2 нед","7 дней"];
 
-    <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNPFeM8iB45G8OzG7Phh9ekFeGk2V5IlQs63KlUQ_vIClGWTs-w7TMf-fIPVVFMJ1W/exec";
-        let userData = null;
-        let userId = null;
+    async function load() {
+      try {
+        const r = await fetch(`${SCRIPT_URL}?action=get&uid=${userId}`);
+        const data = await r.json();
+        if (data.error) throw new Error(data.error);
 
-        // Призы
-        const prizes = [
-            "VPN навсегда", "VPN на 3 года", "VPN на 2 года", "VPN на 1 год",
-            "VPN на 6 месяцев", "VPN на 3 месяца", "VPN на 1 месяц", "VPN на 2 недели", "VPN на 7 дней"
-        ];
-        const emojis = ["Lock with key", "Shield", "Globe with meridians", "Key", "Lock", "Key", "Globe", "Key", "Clock"];
-
-        // Инициализация Telegram WebApp
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
-
-        if (Telegram.WebApp.initDataUnsafe?.user) {
-            userId = Telegram.WebApp.initDataUnsafe.user.id;
+        if (data.status === "new") {
+          userData = { limit: 1, used: 0, gifts: [] };
+          document.getElementById("info").textContent = "Тебе доступна 1 попытка!";
         } else {
-            userId = "test_" + Date.now(); // для теста вне Telegram
+          userData = { limit: data.limit, used: data.used, gifts: data.gifts };
+          const left = data.limit - data.used;
+          document.getElementById("info").textContent = left > 0 ? `Осталось попыток: ${left}` : "Попытки закончились";
         }
+        renderBalls();
+      } catch (e) {
+        document.getElementById("info").className = "info error";
+        document.getElementById("info").textContent = "Ошибка: " + e.message;
+        console.error(e);
+      }
+    }
 
-        // Загрузка данных пользователя
-        async function loadUserData() {
-            try {
-                const res = await fetch(`${SCRIPT_URL}?action=get&uid=${userId}`);
-                const data = await res.json();
-                
-                if (data.status === "new") {
-                    userData = { limit: 1, used: 0, gifts: [] };
-                    document.getElementById("attempts-info").textContent = "У тебя 1 попытка!";
-                } else {
-                    userData = {
-                        limit: parseInt(data.limit) || 1,
-                        used: parseInt(data.used) || 0,
-                        gifts: [data.gift, data.gift2, data.gift3, data.gift4].filter(g => g)
-                    };
-                    const left = userData.limit - userData.used;
-                    document.getElementById("attempts-info").textContent = 
-                        left > 0 ? `Осталось попыток: ${left}` : "Попытки закончились";
-                }
-                renderBalls();
-            } catch (e) {
-                document.getElementById("attempts-info").textContent = "Ошибка загрузки...";
-            }
+    function renderBalls() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+      const canPlay = userData.used < userData.limit;
+
+      for (let i = 0; i < 9; i++) {
+        const b = document.createElement("div");
+        b.className = "ball" + (!canPlay ? " disabled" : "");
+        b.innerHTML = `
+          <div class="face front"><div class="thread"></div><div class="cap"></div></div>
+          <div class="face back"><div style="font-size:2.8rem">${emojis[i]}</div><div>${prizes[i]}</div></div>
+        `;
+        if (canPlay) {
+          b.onclick = () => openBall(i, b);
         }
+        grid.appendChild(b);
+      }
+    }
 
-        function renderBalls() {
-            const grid = document.getElementById("grid");
-            grid.innerHTML = "";
-            const left = userData.limit - userData.used;
+    async function openBall(i, el) {
+      if (userData.used >= userData.limit) return;
+      el.classList.add("opened");
 
-            for (let i = 0; i < 9; i++) {
-                const ball = document.createElement("div");
-                ball.className = "ball" + (left <= 0 ? " disabled" : "");
-                ball.innerHTML = `
-                    <div class="face front">
-                        <div class="thread"></div>
-                        <div class="cap"></div>
-                    </div>
-                    <div class="face back">
-                        <div style="font-size:3rem">${emojis[i]}</div>
-                        <div>${prizes[i]}</div>
-                    </div>
-                `;
+      const gift = prizes[i];
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "save", uid: userId, gift: gift }),
+        headers: { "Content-Type": "text/plain" }
+      });
 
-                if (left > 0) {
-                    ball.addEventListener("click", () => openBall(i, ball));
-                }
-                grid.appendChild(ball);
-            }
-        }
+      document.getElementById("winEmoji").textContent = emojis[i];
+      document.getElementById("winTitle").textContent = gift;
+      document.getElementById("winModal").classList.add("show");
+    }
 
-        async function openBall(index, element) {
-            if (userData.used >= userData.limit) return;
-            element.classList.add("opened");
+    function closeAndReload() {
+      document.getElementById("winModal").classList.remove("show");
+      setTimeout(() => location.reload(), 600);
+    }
 
-            const gift = prizes[index];
-            const emoji = emojis[index];
+    function showGifts() {
+      const list = document.getElementById("giftsList");
+      if (userData.gifts.length === 0) {
+        list.innerHTML = "<i>Пока нет выигрышей</i>";
+      } else {
+        list.innerHTML = userData.gifts.map(g => `<div style="background:rgba(0,255,136,0.1);padding:12px;margin:8px 0;border-radius:8px;border-left:4px solid #00ff88">${g}</div>`).join("");
+      }
+      document.getElementById("giftsModal").classList.add("show");
+    }
 
-            // Сохраняем в Google Таблицу
-            await fetch(SCRIPT_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: "save", uid: userId, gift: gift }),
-                headers: { "Content-Type": "text/plain" }
-            });
+    // Снежинки
+    setInterval(() => {
+      const s = document.createElement("div");
+      s.className = "snow";
+      s.textContent = ["Snowflake","Snowflake","Star"][Math.random()*3|0];
+      s.style.left = Math.random()*100+"vw";
+      s.style.animationDuration = 6+Math.random()*6+"s";
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 12000);
+    }, 300);
 
-            // Показываем модалку
-            document.getElementById("winEmoji").textContent = emoji;
-            document.getElementById("winTitle").textContent = gift;
-            document.getElementById("winModal").classList.add("show");
-        }
-
-        function closeAndReload() {
-            document.getElementById("winModal").classList.remove("show");
-            setTimeout(() => location.reload(), 500); // Обновляем приложение
-        }
-
-        function closeModal() {
-            document.getElementById("winModal").classList.remove("show");
-        }
-
-        function showGifts() {
-            const list = document.getElementById("giftsList");
-            if (!userData || userData.gifts.length === 0) {
-                list.innerHTML = '<div class="no-gifts">У тебя пока нет подарков</div>';
-            } else {
-                list.innerHTML = userData.gifts.map(g => 
-                    `<div class="gift-item">${g}</div>`
-                ).join("");
-            }
-            document.getElementById("giftsModal").classList.add("show");
-        }
-
-        // Снежинки
-        setInterval(() => {
-            const s = document.createElement("div");
-            s.className = "snow";
-            s.textContent = ["Snowflake", "Snowflake", "Snowflake"][Math.floor(Math.random()*3)];
-            s.style.left = Math.random() * 100 + "vw";
-            s.style.animationDuration = Math.random() * 4 + 5 + "s";
-            s.style.opacity = Math.random() * 0.8 + 0.2;
-            document.body.appendChild(s);
-            setTimeout(() => s.remove(), 10000);
-        }, 300);
-
-        // Запуск
-        loadUserData();
-    </script>
+    load();
+  </script>
 </body>
 </html>
