@@ -1,77 +1,50 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello, ON1X</title>
-    <meta name="theme-color" content="#000000">
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <style>
-        body {margin:0;padding:20px;min-height:100dvh;background:#000;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;}
-        .card {background:#111;padding:40px;border-radius:24px;width:90%;max-width:420px;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.7);}
-        h1 {margin:0 0 30px;font-size:30px;background:linear-gradient(90deg,#00ff9d,#00b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-        input {width:100%;padding:18px;font-size:20px;margin:15px 0;border:none;border-radius:16px;background:#222;color:#fff;text-align:center;}
-        input[disabled] {opacity:0.8;}
-        .status {margin-top:20px;font-size:16px;}
-        .found {color:#00ff9d;}
-        .notfound {color:#ff6b6b;}
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello, ON1X</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body{background:#000;color:#fff;font-family:system-ui;text-align:center;padding:30px;}
+    input{width:90%;padding:20px;margin:20px auto;font-size:22px;background:#222;color:#0f0;border:none;border-radius:16px;text-align:center;}
+    .err{color:#f66;font-weight:bold;}
+  </style>
 </head>
 <body>
-
-<div class="card">
-    <h1>Hello, ON1X</h1>
-    <input type="text" id="keyInput" disabled placeholder="Ищем ваш ключ...">
-    <div class="status" id="status">Загружаем...</div>
-</div>
+  <h1>Hello, ON1X</h1>
+  <input type="text" id="key" disabled placeholder="Ждём...">
+  <div id="log"></div>
 
 <script>
-    const supabase = window.supabase.createClient(
-        'https://drrpeeoaatepcrzgoqud.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY'
-    );
+  const tg = Telegram.WebApp;
+  tg.ready(); tg.expand();
+  const tgId = tg.initDataUnsafe?.user?.id?.toString();
+  document.getElementById('log').innerHTML = 'Ваш TG ID: <b>' + tgId + '</b><br>Ищем...';
 
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+  const supabase = window.supabase.createClient(
+    'https://drrpeeoaatepcrzgoqud.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY'
+  );
 
-    const user = tg.initDataUnsafe?.user;
-    if (!user?.id) {
-        document.getElementById('status').innerHTML = '<span class="notfound">Ошибка Telegram</span>';
-        return;
-    }
-
-    const telegramId = user.id.toString();
-
-    async function loadKey() {
-        const { data, error } = await supabase
-            .from('Hello, ON1X')
-            .select('Key')
-            .eq('TG ID', telegramId)
-            .maybeSingle();
-
-        const input = document.getElementById('keyInput');
-        const status = document.getElementById('status');
-
-        if (error && error.code !== 'PGRST116') {
-            status.innerHTML = '<span class="notfound">Ошибка сервера</span>';
-            return;
-        }
-
-        if (data?.Key) {
-            input.value = data.Key.trim();
-            status.innerHTML = '<span class="found">Ключ найден!</span>';
-        } else {
-            input.value = '—';
-            status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы</span>';
-        }
-    }
-
-    loadKey();
+  supabase
+    .from('Hello, ON1X')
+    .select('Key')
+    .eq('TG ID', tgId)
+    .maybeSingle()
+    .then(res => {
+      if (res.error) {
+        document.getElementById('log').innerHTML += '<br><span class="err">ОШИБКА: ' + res.error.message + '</span>';
+        document.getElementById('key').value = 'Ошибка';
+      } else if (res.data?.Key) {
+        document.getElementById('key').value = res.data.Key;
+        document.getElementById('log').innerHTML += '<br>КЛЮЧ НАЙДЕН!';
+      } else {
+        document.getElementById('key').value = '—';
+        document.getElementById('log').innerHTML += '<br>ID не найден в таблице';
+      }
+    });
 </script>
-
 </body>
 </html>
