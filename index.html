@@ -3,48 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello, ON1X Debug</title>
+  <title>Hello, ON1X</title>
+  <meta name="theme-color" content="#000000">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body{background:#000;color:#fff;font-family:system-ui;text-align:center;padding:30px;font-size:16px;}
-    input{width:90%;padding:20px;margin:20px auto;font-size:22px;background:#222;color:#0f0;border:none;border-radius:16px;text-align:center;}
-    .err{color:#f66;font-weight:bold;}
-    .ok{color:#0f0;}
-    #log{max-height:300px;overflow:auto;padding:10px;background:#111;border-radius:8px;margin:10px;}
+    body{margin:0;padding:20px;min-height:100dvh;background:#000;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;}
+    .card{background:#111;padding:40px;border-radius:24px;width:90%;max-width:420px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.8);}
+    h1{margin:0 0 30px;font-size:32px;background:linear-gradient(90deg,#00ff9d,#00b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    input{width:100%;padding:20px;font-size:22px;margin:15px 0;border:none;border-radius:16px;background:#222;color:#0f0;text-align:center;}
+    input[disabled]{opacity:0.85;}
+    .status{margin-top:15px;font-size:17px;}
+    .ok{color:#00ff9d;}
+    .no{color:#ff6b6b;}
   </style>
 </head>
 <body>
+
+<div class="card">
   <h1>Hello, ON1X</h1>
-  <input type="text" id="key" disabled placeholder="Ждём ключ...">
-  <div id="log">Инициализация...</div>
+  <input type="text" id="keyInput" disabled placeholder="Ищем ваш ключ...">
+  <div class="status" id="status">Загружаем...</div>
+</div>
 
 <script>
   const tg = Telegram.WebApp;
-  tg.ready(); 
+  tg.ready();
   tg.expand();
-  
-  // Получаем TG ID с лучшей проверкой
-  let tgId;
-  try {
-    tgId = tg.initDataUnsafe?.user?.id?.toString();
-    if (!tgId) {
-      tgId = 'undefined - проверьте бота (должен быть Web App)';
-    }
-  } catch(e) {
-    tgId = 'ошибка Telegram: ' + e.message;
-  }
-  
-  const log = (msg) => {
-    document.getElementById('log').innerHTML += '<br>' + msg;
-    console.log(msg);
-  };
-  
-  log('<span class="ok">Ваш TG ID: <b>' + tgId + '</b></span>');
-  
-  if (tgId === 'undefined - проверьте бота (должен быть Web App)') {
-    log('<span class="err">Проблема: Mini App не получает данные от Telegram. Убедитесь, что бот настроен правильно (BotFather → Edit Bot → Web App).</span>');
-    document.getElementById('key').value = 'Нет TG ID';
+
+  const userId = tg.initDataUnsafe?.user?.id?.toString();
+  if (!userId) {
+    document.getElementById('status').innerHTML = '<span class="no">Ошибка Telegram ID</span>';
+    document.getElementById('keyInput').value = '—';
     return;
   }
 
@@ -53,45 +43,33 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY'
   );
 
-  // Сначала тест: покажем все колонки таблицы
-  log('Тестируем доступ к таблице...');
-  supabase
-    .from('Hello, ON1X')
-    .select('*')
-    .limit(1)  // всего одну строку, чтобы увидеть колонки
-    .then(res => {
-      if (res.error) {
-        log('<span class="err">ОШИБКА доступа к таблице: ' + res.error.message + '</span>');
-        log('<span class="err">Возможно, RLS включён — отключите его!</span>');
-        return;
-      }
-      if (res.data && res.data[0]) {
-        log('<span class="ok">Колонки в таблице: ' + Object.keys(res.data[0]).join(', ') + '</span>');
-      } else {
-        log('<span class="ok">Таблица пуста, но доступна.</span>');
-      }
-      
-      // Теперь основной запрос (с кавычками для пробелов в именах)
-      log('Ищем ключ для ID: ' + tgId);
-      supabase
-        .from('Hello, ON1X')
-        .select('"Key"')  // кавычки для колонки Key
-        .eq('"TG ID"', tgId)  // кавычки для колонки с пробелом!
-        .maybeSingle()
-        .then(result => {
-          if (result.error) {
-            log('<span class="err">ОШИБКА запроса: ' + result.error.message + '</span>');
-            log('<span class="err">Проверьте имя колонки "TG ID" (с пробелом?).</span>');
-            document.getElementById('key').value = 'Ошибка запроса';
-          } else if (result.data?.Key) {
-            document.getElementById('key').value = result.data.Key;
-            log('<span class="ok">КЛЮЧ НАЙДЕН: ' + result.data.Key + '</span>');
-          } else {
-            document.getElementById('key').value = '—';
-            log('<span class="err">ID не найден в таблице. Добавьте строку с TG ID: ' + tgId + '</span>');
-          }
-        });
-    });
+  async function loadKey() {
+    const { data, error } = await supabase
+      .from('Hello, ON1X')
+      .select('Key')
+      .eq('"ID TG"', userId)   // ← именно так, потому что колонка начинается с пробела!
+      .maybeSingle();
+
+    const input = document.getElementById('keyInput');
+    const status = document.getElementById('status');
+
+    if (error && error.code !== 'PGRST116') {
+      status.innerHTML = '<span class="no">Ошибка сервера</span>';
+      input.value = '—';
+      return;
+    }
+
+    if (data?.Key) {
+      input.value = data.Key.trim();
+      status.innerHTML = '<span class="ok">Ключ найден!</span>';
+    } else {
+      input.value = '—';
+      status.innerHTML = '<span class="no">Вы ещё не зарегистрированы</span>';
+    }
+  }
+
+  loadKey();
 </script>
+
 </body>
 </html>
