@@ -3,78 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello, ON1X — финал</title>
+  <title>Hello, ON1X</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body{background:#000;color:#fff;font-family:system-ui;text-align:center;padding:30px;}
-    input, div{margin:15px auto;padding:18px;font-size:20px;background:#222;border-radius:12px;width:90%;max-width:400px;}
-    .ok{color:#0f0;}
-    .no{color:#f66;}
+    body{margin:0;background:#000;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100dvh;}
+    .c{background:#111;padding:40px;border-radius:24px;text-align:center;width:90%;max-width:420px;}
+    h1{font-size:32px;background:linear-gradient(90deg,#00ff9d,#00b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 30px;}
+    input{width:100%;padding:20px;font-size:22px;background:#222;color:#0f0;border:none;border-radius:16px;text-align:center;}
   </style>
 </head>
 <body>
-
+<div class="c">
   <h1>Hello, ON1X</h1>
-  <input type="text" id="result" disabled placeholder="Ждём...">
-  <div id="debug"></div>
-
+  <input type="text" id="k" disabled value="Ищем ключ...">
+</div>
 <script>
-  Telegram.WebApp.ready();
-  Telegram.WebApp.expand();
+  Telegram.WebApp.ready(); Telegram.WebApp.expand();
+  const uid = Telegram.WebApp.initDataUnsafe.user.id.toString();
 
-  const tgId = Telegram.WebApp.initDataUnsafe.user.id.toString();
-  document.getElementById('debug').innerHTML = 'Ваш TG ID: <b>' + tgId + '</b><br>Ищем в таблице...';
-
-  const supabase = window.supabase.createClient(
-    'https://drrpeeoaatepcrzgoqud.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY'
-  );
-
-  // Сначала отключим RLS полностью через прямой запрос (на всякий случай)
-  // а потом ищем тремя способами — один из них точно сработает
-  async function findKey() {
-    // Способ 1 — обычный
-    let { data, error } = await supabase
-      .from('Hello, ON1X')
-      .select('Key')
-      .eq('"ID TG"', tgId)
-      .maybeSingle();
-
-    if (data?.Key) {
-      document.getElementById('result').value = data.Key.trim();
-      document.getElementById('debug').innerHTML += '<br><span class="ok">ГОТОВО! Ключ найден (способ 1)</span>';
-      return;
-    }
-
-    // Способ 2 — как текст с trim
-    ({ data, error } = await supabase
-      .from('Hello, ON1X')
-      .select('Key')
-      .ilike('"ID TG"', tgId)   // нечувствительный поиск
-      .maybeSingle());
-
-    if (data?.Key) {
-      document.getElementById('result').value = data.Key.trim();
-      document.getElementById('debug').innerHTML += '<br><span class="ok">ГОТОВО! Ключ найден (способ 2)</span>';
-      return;
-    }
-
-    // Способ 3 — покажем вообще все строки из таблицы (чтобы увидеть, что там лежит)
-    const all = await supabase.from('Hello, ON1X').select('ID TG, Key').limit(20);
-    if (all.data) {
-      document.getElementById('debug').innerHTML += '<br><br>Все записи в таблице:<br>';
-      all.data.forEach(row => {
-        document.getElementById('debug').innerHTML += 
-          `ID TG: "${row['ID TG']}" → Key: ${row.Key || 'пусто'}<br>`;
-      });
-    }
-
-    document.getElementById('result').value = '—';
-    document.getElementById('debug').innerHTML += '<br><span class="no">Ключ не найден</span>';
-  }
-
-  findKey();
+  window.supabase.createClient('https://drrpeeoaatepcrzgoqud.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY')
+    .from('Hello, ON1X')
+    .select('Key')
+    .eq('"ID TG"', uid)
+    .single()
+    .then(r => document.getElementById('k').value = r.data?.Key?.trim() || '—');
 </script>
 </body>
 </html>
