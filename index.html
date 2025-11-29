@@ -1,150 +1,78 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Новогодний VPN-подарок</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { 
-      min-height:100vh; background:#0a001f; color:#fff; 
-      font-family:system-ui,-apple-system,sans-serif; padding:20px 15px;
-      background: radial-gradient(circle at top, #0f0c29, #030014);
-    }
-    .snow { position:fixed; top:-20px; font-size:1.5rem; pointer-events:none; animation:fall linear infinite; }
-    @keyframes fall { to { transform:translateY(110vh); opacity:0; } }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, ON1X</title>
+    <meta name="theme-color" content="#000000">
 
-    h1 { font-size:2.4rem; text-align:center; background:linear-gradient(90deg,#00ff88,#00d4ff,#ff00aa); -webkit-background-clip:text; color:transparent; }
-    .info { padding:14px; background:rgba(0,255,136,0.15); border:1px solid #00ff88; border-radius:12px; text-align:center; margin:15px 0; }
-    .btn { padding:12px 28px; border:none; border-radius:50px; font-weight:600; cursor:pointer; margin:8px; }
-    .btn-p { background:#00ff88; color:#000; }
-    .btn-s { background:transparent; border:2px solid #00ff88; color:#00ff88; }
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; max-width:460px; margin:30px auto; }
-    .ball { aspect-ratio:1; position:relative; cursor:pointer; transform-style:preserve-3d; transition:0.8s; }
-    .ball.disabled { opacity:0.4; pointer-events:none; }
-    .ball:hover:not(.disabled) { transform:scale(1.1) translateY(-10px); }
-    .ball.opened { transform:rotateY(180deg) scale(1.15); }
-
-    .face { position:absolute; inset:0; border-radius:50%; backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 0 30px rgba(0,255,136,0.5); }
-    .front { background:radial-gradient(circle at 30% 30%, #ff006e, #6600ff, #00ff88); }
-    .back { background:#000; transform:rotateY(180deg); border:3px solid #00ff88; }
-    .cap { position:absolute; top:-10px; left:50%; transform:translateX(-50%); width:32%; height:22px; background:#ffd700; border-radius:12px 12px 0 0; }
-    .thread { position:absolute; top:-45px; left:50%; width:5px; height:45px; background:#fff; transform:translateX(-50%); }
-
-    .modal { position:fixed; inset:0; background:rgba(0,0,0,0.95); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; opacity:0; visibility:hidden; transition:0.4s; z-index:999; }
-    .modal.show { opacity:1; visibility:visible; }
-    .mc { background:#1a0033; padding:40px; border-radius:24px; text-align:center; border:1px solid #00ff88; max-width:90%; box-shadow:0 0 40px rgba(0,255,136,0.4); transform:scale(0.8); transition:0.5s; }
-    .modal.show .mc { transform:scale(1); }
-  </style>
+    <style>
+        body {margin:0;padding:20px;min-height:100dvh;background:#000;color:#fff;font-family:system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+        .card {background:#111;padding:35px;border-radius:24px;width:90%;max-width:420px;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.7);}
+        h1 {margin:0 0 30px;font-size:30px;background:linear-gradient(90deg,#00ff9d,#00b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+        input {width:100%;padding:18px;font-size:20px;margin:15px 0;border:none;border-radius:16px;background:#222;color:#fff;text-align:center;}
+        input[disabled] {opacity:0.8;cursor:not-allowed;}
+        .status {margin-top:20px;font-size:16px;opacity:0.8;}
+        .found {color:#00ff9d;}
+        .notfound {color:#ff6b6b;}
+    </style>
 </head>
 <body>
 
-  <h1>Новогодний VPN-подарок</h1>
-  <div class="info" id="info">Загрузка...</div>
-  <div style="text-align:center">
-    <button class="btn btn-s" onclick="showGifts()">Мои подарки</button>
-  </div>
+<div class="card">
+    <h1>Hello, ON1X</h1>
+    <input type="text" id="keyInput" disabled placeholder="Ищем ваш ключ...">
+    <div class="status" id="status">Загружаем...</div>
+</div>
 
-  <div class="grid" id="grid"></div>
+<script>
+    const supabase = window.supabase.createClient(
+        'https://drrpeeoaatepcrzgoqud.supabase.co',
+        'sb_publishable_9SVDXXIMUGzPVfmC7OwBIg_94SYwcW6'
+    );
 
-  <!-- Выигрыш -->
-  <div class="modal" id="win"><div class="mc" onclick="event.stopPropagation()">
-    <div style="font-size:5rem" id="emoji">Gift</div>
-    <h2 style="background:linear-gradient(90deg,#00ff88,#00d4ff);-webkit-background-clip:text;color:transparent;margin:15px 0" id="gift"></h2>
-    <button class="btn btn-p" onclick="closeWin()">Забрать и обновить</button>
-  </div></div>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-  <!-- Подарки -->
-  <div class="modal" id="gifts"><div class="mc" onclick="event.stopPropagation()">
-    <h2 style="color:#00ff88">Твои подарки</h2>
-    <div id="list" style="margin:20px 0; text-align:left"></div>
-    <button class="btn btn-p" onclick="document.getElementById('gifts').classList.remove('show')">Закрыть</button>
-  </div></div>
+    const user = tg.initDataUnsafe?.user;
+    if (!user?.id) {
+        document.getElementById('status').innerHTML = '<span class="notfound">Ошибка Telegram</span>';
+        return;
+    }
 
-  <script>
-    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxNPFeM8iB45G8OzG7Phh9ekFeGk2V5IlQs63KlUQ_vIClGWTs-w7TMf-fIPVVFMJ1W/exec";
-    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+    const telegramId = user.id.toString();
 
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
+    async function loadKey() {
+        const { data, error } = await supabase
+            .from('Hello, ON1X')
+            .select('Key')
+            .eq('TG ID', telegramId)
+            .maybeSingle();   // важно! если строки нет — не будет ошибки
 
-    const userId = Telegram.WebApp.initDataUnsafe?.user?.id || "test" + Date.now();
-    let user = {limit:1, used:0, gifts:[]};
+        const input = document.getElementById('keyInput');
+        const status = document.getElementById('status');
 
-    const prizes = ["VPN навсегда","VPN на 3 года","VPN на 2 года","VPN на 1 год","VPN на 6 месяцев","VPN на 3 месяца","VPN на 1 месяц","VPN на 2 недели","VPN на 7 дней"];
-    const emojiList = ["Permanent","3 года","2 года","1 год","6 мес","3 мес","1 мес","2 нед","7 дней"];
-
-    async function load() {
-      try {
-        const r = await fetch(`${SCRIPT_URL}?action=get&uid=${userId}`);
-        const d = await r.json();
-        if (d.status === "new") {
-          user = {limit:1, used:0, gifts:[]};
-          document.getElementById("info").innerHTML = "Тебе доступна <b>1 попытка</b>!";
-        } else {
-          user = {limit:d.limit, used:d.used, gifts:d.gifts};
-          const left = d.limit - d.used;
-          document.getElementById("info").innerHTML = left > 0 ? `Осталось попыток: <b>${left}</b>` : "Попытки закончились";
+        if (error && error.code !== 'PGRST116') {
+            console.error(error);
+            status.innerHTML = '<span class="notfound">Ошибка сервера</span>';
+            return;
         }
-        render();
-      } catch(e) {
-        document.getElementById("info").innerHTML = "Ошибка сети. Попробуй позже.";
-      }
+
+        if (data?.Key) {
+            input.value = data.Key.trim();
+            status.innerHTML = '<span class="found">Ключ найден!</span>';
+        } else {
+            input.value = '—';
+            status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы</span>';
+        }
     }
 
-    function render() {
-      const g = document.getElementById("grid");
-      g.innerHTML = "";
-      const can = user.used < user.limit;
-      for(let i=0; i<9; i++){
-        const b = document.createElement("div");
-        b.className = "ball" + (!can?" disabled":"");
-        b.innerHTML = `<div class="face front"><div class="thread"></div><div class="cap"></div></div>
-                       <div class="face back"><div style="font-size:2.8rem">${emojiList[i]}</div><div>${prizes[i]}</div></div>`;
-        if(can) b.onclick = () => play(i, b);
-        g.appendChild(b);
-      }
-    }
+    loadKey();
+</script>
 
-    async function play(i, el) {
-      el.classList.add("opened");
-      const gift = prizes[i];
-      await fetch(SCRIPT_URL, {method:"POST", body:JSON.stringify({action:"save", uid:userId, gift:gift})});
-      document.getElementById("emoji").textContent = emojiList[i];
-      document.getElementById("gift").textContent = gift;
-      document.getElementById("win").classList.add("show");
-    }
-
-    function closeWin() {
-      document.getElementById("win").classList.remove("show");
-      setTimeout(()=>location.reload(), 500);
-    }
-
-    function showGifts() {
-      const l = document.getElementById("list");
-      if(user.gifts.length===0){
-        l.innerHTML = "<i>Пока нет выигрышей</i>";
-      }else{
-        l.innerHTML = user.gifts.map(g=>`<div style="background:rgba(0,255,136,0.15);padding:12px;margin:8px 0;border-radius:8px;border-left:4px solid #00ff88">${g}</div>`).join("");
-      }
-      document.getElementById("gifts").classList.add("show");
-    }
-
-    // Снег
-    setInterval(()=>{ 
-      const s=document.createElement("div"); 
-      s.className="snow"; 
-      s.textContent=["Snowflake","Snowflake","Star"][Math.random()*3|0];
-      s.style.left=Math.random()*100+"vw";
-      s.style.animationDuration=5+Math.random()*7+"s";
-      document.body.appendChild(s);
-      setTimeout(()=>s.remove(),12000);
-    },300);
-
-    load();
-  </script>
 </body>
 </html>
