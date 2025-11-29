@@ -10,15 +10,14 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
     <style>
-        body {margin:0;padding:20px;min-height:100dvh;background:#000;color:#fff;font-family:system-ui;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-        .card {background:#111;padding:35px;border-radius:24px;width:90%;max-width:420px;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.7);}
+        body {margin:0;padding:20px;min-height:100dvh;background:#000;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;}
+        .card {background:#111;padding:40px;border-radius:24px;width:90%;max-width:420px;text-align:center;box-shadow:0 15px 50px rgba(0,0,0,0.7);}
         h1 {margin:0 0 30px;font-size:30px;background:linear-gradient(90deg,#00ff9d,#00b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
         input {width:100%;padding:18px;font-size:20px;margin:15px 0;border:none;border-radius:16px;background:#222;color:#fff;text-align:center;}
-        input[disabled] {opacity:0.8;cursor:not-allowed;}
-        .status {margin-top:20px;font-size:16px;opacity:0.8;}
+        input[disabled] {opacity:0.8;}
+        .status {margin-top:20px;font-size:16px;}
         .found {color:#00ff9d;}
         .notfound {color:#ff6b6b;}
-        .error {color:#ff6b6b; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -30,92 +29,47 @@
 </div>
 
 <script>
-    console.log('🚀 Mini App запущен!');
+    const supabase = window.supabase.createClient(
+        'https://drrpeeoaatepcrzgoqud.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY'
+    );
 
-    // Проверяем Supabase
-    const supabaseUrl = 'https://drrpeeoaatepcrzgoqud.supabase.co';
-    const supabaseKey = 'sb_publishable_9SVDXXIMUGzPVfmC7OwBIg_94SYwcW6';
-    
-    console.log('🔗 Supabase URL:', supabaseUrl);
-    console.log('🔑 Supabase Key (первые 10 символов):', supabaseKey.substring(0, 10) + '...');
-    
-    let supabase;
-    try {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-        console.log('✅ Supabase клиент создан успешно');
-    } catch (error) {
-        console.error('❌ Ошибка создания Supabase клиента:', error);
-        document.getElementById('status').innerHTML = '<span class="error">Ошибка Supabase: ' + error.message + '</span>';
-        throw error;
-    }
-
-    // Telegram
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    console.log('📱 Telegram WebApp готов');
-
     const user = tg.initDataUnsafe?.user;
-    console.log('👤 Telegram User:', user);
-
     if (!user?.id) {
-        console.error('❌ Нет Telegram ID');
-        document.getElementById('status').innerHTML = '<span class="notfound">Ошибка: Нет Telegram ID</span>';
+        document.getElementById('status').innerHTML = '<span class="notfound">Ошибка Telegram</span>';
         return;
     }
 
     const telegramId = user.id.toString();
-    console.log('🆔 Ваш Telegram ID:', telegramId);
 
-    // Загрузка ключа
     async function loadKey() {
-        console.log('🔍 Запускаем поиск ключа для ID:', telegramId);
-        
+        const { data, error } = await supabase
+            .from('Hello, ON1X')
+            .select('Key')
+            .eq('TG ID', telegramId)
+            .maybeSingle();
+
+        const input = document.getElementById('keyInput');
         const status = document.getElementById('status');
-        status.innerHTML = 'Ищем... (проверяем консоль F12)';
 
-        try {
-            const { data, error } = await supabase
-                .from('Hello, ON1X')
-                .select('Key')
-                .eq('TG ID', telegramId)
-                .maybeSingle();
+        if (error && error.code !== 'PGRST116') {
+            status.innerHTML = '<span class="notfound">Ошибка сервера</span>';
+            return;
+        }
 
-            console.log('📊 Результат запроса:', { data, error });
-
-            const input = document.getElementById('keyInput');
-
-            if (error) {
-                console.error('❌ Supabase ошибка:', error);
-                if (error.code === 'PGRST116') { // Нет записи
-                    input.value = '—';
-                    status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы</span>';
-                } else if (error.message.includes('invalid') || error.message.includes('project')) {
-                    input.value = '—';
-                    status.innerHTML = '<span class="error">Неверный Supabase URL/ключ! Проверьте настройки.</span>';
-                } else {
-                    status.innerHTML = '<span class="error">Ошибка: ' + error.message + '</span>';
-                }
-                return;
-            }
-
-            if (data?.Key) {
-                input.value = data.Key.trim();
-                status.innerHTML = '<span class="found">Ключ найден!</span>';
-                console.log('✅ Ключ загружен:', data.Key);
-            } else {
-                input.value = '—';
-                status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы (проверьте ID в консоли)</span>';
-                console.log('ℹ️ Запись не найдена для ID:', telegramId);
-            }
-        } catch (err) {
-            console.error('💥 Общая ошибка:', err);
-            status.innerHTML = '<span class="error">Общая ошибка: ' + err.message + '</span>';
+        if (data?.Key) {
+            input.value = data.Key.trim();
+            status.innerHTML = '<span class="found">Ключ найден!</span>';
+        } else {
+            input.value = '—';
+            status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы</span>';
         }
     }
 
-    // Запуск
     loadKey();
 </script>
 
