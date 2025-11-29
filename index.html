@@ -18,6 +18,7 @@
         .status {margin-top:20px;font-size:16px;opacity:0.8;}
         .found {color:#00ff9d;}
         .notfound {color:#ff6b6b;}
+        .error {color:#ff6b6b; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -29,48 +30,92 @@
 </div>
 
 <script>
-    const supabase = window.supabase.createClient(
-        'https://drrpeeoaatepcrzgoqud.supabase.co',
-        'sb_publishable_9SVDXXIMUGzPVfmC7OwBIg_94SYwcW6'
-    );
+    console.log('🚀 Mini App запущен!');
 
+    // Проверяем Supabase
+    const supabaseUrl = 'https://drrpeeoaatepcrzgoqud.supabase.co';
+    const supabaseKey = 'sb_publishable_9SVDXXIMUGzPVfmC7OwBIg_94SYwcW6';
+    
+    console.log('🔗 Supabase URL:', supabaseUrl);
+    console.log('🔑 Supabase Key (первые 10 символов):', supabaseKey.substring(0, 10) + '...');
+    
+    let supabase;
+    try {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Supabase клиент создан успешно');
+    } catch (error) {
+        console.error('❌ Ошибка создания Supabase клиента:', error);
+        document.getElementById('status').innerHTML = '<span class="error">Ошибка Supabase: ' + error.message + '</span>';
+        throw error;
+    }
+
+    // Telegram
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
+    console.log('📱 Telegram WebApp готов');
+
     const user = tg.initDataUnsafe?.user;
+    console.log('👤 Telegram User:', user);
+
     if (!user?.id) {
-        document.getElementById('status').innerHTML = '<span class="notfound">Ошибка Telegram</span>';
+        console.error('❌ Нет Telegram ID');
+        document.getElementById('status').innerHTML = '<span class="notfound">Ошибка: Нет Telegram ID</span>';
         return;
     }
 
     const telegramId = user.id.toString();
+    console.log('🆔 Ваш Telegram ID:', telegramId);
 
+    // Загрузка ключа
     async function loadKey() {
-        const { data, error } = await supabase
-            .from('Hello, ON1X')
-            .select('Key')
-            .eq('TG ID', telegramId)
-            .maybeSingle();   // важно! если строки нет — не будет ошибки
-
-        const input = document.getElementById('keyInput');
+        console.log('🔍 Запускаем поиск ключа для ID:', telegramId);
+        
         const status = document.getElementById('status');
+        status.innerHTML = 'Ищем... (проверяем консоль F12)';
 
-        if (error && error.code !== 'PGRST116') {
-            console.error(error);
-            status.innerHTML = '<span class="notfound">Ошибка сервера</span>';
-            return;
-        }
+        try {
+            const { data, error } = await supabase
+                .from('Hello, ON1X')
+                .select('Key')
+                .eq('TG ID', telegramId)
+                .maybeSingle();
 
-        if (data?.Key) {
-            input.value = data.Key.trim();
-            status.innerHTML = '<span class="found">Ключ найден!</span>';
-        } else {
-            input.value = '—';
-            status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы</span>';
+            console.log('📊 Результат запроса:', { data, error });
+
+            const input = document.getElementById('keyInput');
+
+            if (error) {
+                console.error('❌ Supabase ошибка:', error);
+                if (error.code === 'PGRST116') { // Нет записи
+                    input.value = '—';
+                    status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы</span>';
+                } else if (error.message.includes('invalid') || error.message.includes('project')) {
+                    input.value = '—';
+                    status.innerHTML = '<span class="error">Неверный Supabase URL/ключ! Проверьте настройки.</span>';
+                } else {
+                    status.innerHTML = '<span class="error">Ошибка: ' + error.message + '</span>';
+                }
+                return;
+            }
+
+            if (data?.Key) {
+                input.value = data.Key.trim();
+                status.innerHTML = '<span class="found">Ключ найден!</span>';
+                console.log('✅ Ключ загружен:', data.Key);
+            } else {
+                input.value = '—';
+                status.innerHTML = '<span class="notfound">Вы ещё не зарегистрированы (проверьте ID в консоли)</span>';
+                console.log('ℹ️ Запись не найдена для ID:', telegramId);
+            }
+        } catch (err) {
+            console.error('💥 Общая ошибка:', err);
+            status.innerHTML = '<span class="error">Общая ошибка: ' + err.message + '</span>';
         }
     }
 
+    // Запуск
     loadKey();
 </script>
 
