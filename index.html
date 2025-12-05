@@ -1,33 +1,731 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello, ON1X</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body{margin:0;background:#000;color:#fff;font-family:system-ui;display:flex;align-items:center;justify-content:center;height:100dvh;}
-    .c{background:#111;padding:40px;border-radius:24px;text-align:center;width:90%;max-width:420px;}
-    h1{font-size:32px;background:linear-gradient(90deg,#00ff9d,#00b8ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 30px;}
-    input{width:100%;padding:20px;font-size:22px;background:#222;color:#0f0;border:none;border-radius:16px;text-align:center;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>ON1X ADMIN</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --color-bg-light: #f7f9fc;      
+            --color-bg-card: #ffffff;       
+            --color-text-dark: #333333;     
+            --color-accent-blue: #007bff;   
+            --color-shadow: rgba(0, 0, 0, 0.1);
+            --color-border: #e0e0e0;        
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--color-bg-light);
+            color: var(--color-text-dark);
+            margin: 0;
+            padding: 15px;
+            line-height: 1.5;
+        }
+
+        .admin-header, .client-card, .modal-content {
+            border-radius: 12px;
+            box-shadow: 0 4px 10px var(--color-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-header {
+            background-color: var(--color-bg-card);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .admin-header h1 {
+            font-size: 2em;
+            color: var(--color-accent-blue);
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column; 
+            width: 100%; 
+            gap: 12px;
+        }
+
+        #searchInput {
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box; 
+            font-size: 1em;
+            color: var(--color-text-dark);
+        }
+
+        .btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .add-btn {
+            background-color: #28a745; 
+            color: white;
+            width: 100%; 
+        }
+
+        .info-btn {
+            background-color: var(--color-accent-blue);
+            color: white;
+            padding: 10px 18px;
+        }
+
+        .client-container {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+            padding: 0;
+        }
+
+        .client-card {
+            background-color: var(--color-bg-card);
+            padding: 18px;
+            border-left: 4px solid var(--color-accent-blue); 
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .client-key-display {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--color-text-dark);
+        }
+        
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto; 
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .modal.is-active {
+            display: flex; 
+        }
+
+        .modal-content {
+            background-color: var(--color-bg-card);
+            padding: 30px;
+            max-width: 450px;
+            width: 95%; 
+            margin: 10% auto; 
+        }
+        
+        .modal-content h2 {
+            color: var(--color-accent-blue);
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            text-align: center; 
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--color-text-dark);
+            font-weight: 600;
+            text-align: center; 
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+            background-color: #f9f9f9;
+            color: var(--color-text-dark);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .modal-footer .btn {
+            flex-grow: 1;
+        }
+
+        .modal-content p strong {
+            font-weight: 600;
+            margin-right: 10px;
+            display: inline-block;
+            min-width: 120px;
+        }
+
+        .centered-status {
+            text-align: center;
+            margin-bottom: 15px; 
+            padding: 10px 0; 
+            font-size: 1.3em;
+            font-weight: bold;
+            background-color: #f0f4f7;
+            border-radius: 6px;
+        }
+
+        .key-sil-display {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            border-radius: 6px;
+            justify-content: flex-start; 
+            text-align: left; 
+        }
+        
+        .key-sil-text {
+            flex-grow: 1; 
+            word-break: break-all;
+            font-size: 0.95em;
+            color: var(--color-text-dark);
+            text-align: left; 
+        }
+        
+        #keySilLabel {
+            font-weight: 600; 
+            margin-top: 20px; 
+            margin-bottom: 5px;
+            text-align: left; 
+        }
+        
+        .copy-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            transition: background-color 0.3s;
+            flex-shrink: 0; 
+        }
+
+        .message-btn {
+            background-color: #007bff; 
+            color: white; 
+            display:block; 
+            text-align:center; 
+            text-decoration: none; 
+            margin-top: 25px;
+        }
+        
+        #infoModalEditBtn { background-color: #ffc107; color: #333; }
+        #infoModalDeleteBtn { background-color: #dc3545; color: white; }
+
+        .status-partner { color: #007bff; }
+        .status-disabled { color: #dc3545; }
+        .status-active { color: #28a745; }
+        .status-expired { color: #ffc107; }
+
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+    </style>
 </head>
 <body>
-<div class="c">
-  <h1>Hello, ON1X</h1>
-  <input type="text" id="k" disabled value="Ищем ключ...">
-</div>
-<script>
-  Telegram.WebApp.ready(); Telegram.WebApp.expand();
-  const uid = Telegram.WebApp.initDataUnsafe.user.id.toString();
+    <header class="admin-header">
+        <h1>ON1X ADMIN</h1>
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Поиск по клиенту/ключу...">
+            <button id="addButton" class="btn add-btn">➕ Добавить</button>
+        </div>
+    </header>
 
-  window.supabase.createClient('https://drrpeeoaatepcrzgoqud.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY')
-    .from('Hello, ON1X')
-    .select('Key')
-    .eq('"ID TG"', uid)
-    .single()
-    .then(r => document.getElementById('k').value = r.data?.Key?.trim() || '—');
-</script>
+    <main class="client-container" id="clientContainer">
+        </main>
+    
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close info-modal-close">&times;</span>
+            <div id="infoModalContent">
+                </div>
+            <div class="modal-footer">
+                <button id="infoModalEditBtn" class="btn">📝 Редактировать</button>
+                <button id="infoModalDeleteBtn" class="btn delete-btn">❌ Удалить</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="formModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close form-modal-close">&times;</span>
+            <h2 id="formModalTitle">Добавить клиента</h2>
+            <form id="clientForm" autocomplete="off">
+                <input type="hidden" id="formClientId">
+                <input type="hidden" id="formPrimaryId">
+                
+                <div class="form-group">
+                    <label for="formKey">№ ключа</label>
+                    <input type="text" id="formKey" autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label for="formId">Telegram ID</label>
+                    <input type="text" id="formId" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="formUsername">Username</label>
+                    <input type="text" id="formUsername" autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label for="formLimit">Лимит устройств</label>
+                    <select id="formLimit" autocomplete="off">
+                        <option value="">Не выбрано</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="formServer">Сервер</label>
+                    <select id="formServer" autocomplete="off">
+                        <option value="">Не выбрано</option>
+                        <option value="🇳🇱 Ниденланды 1">🇳🇱 Ниденланды 1</option>
+                        <option value="🇳🇱 Ниденланды 2">🇳🇱 Ниденланды 2</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="formStatus">Статус ключа</label>
+                    <select id="formStatus" autocomplete="off">
+                        <option value="">Не выбрано</option>
+                        <option value="Партнер">🔵 Партнер</option>
+                        <option value="Отключена">🔴 Отключена</option>
+                        <option value="Активная">🟢 Активная</option>
+                        <option value="Закончилась">🟡 Закончилась</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="formMes">Сообщение (ссылка)</label>
+                    <input type="url" id="formMes" autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="formKeySil">Ключ (ссылка)</label>
+                    <input type="text" id="formKeySil" autocomplete="off"> 
+                </div>
+                
+                <div class="modal-footer" style="border-top: none; padding-top: 0;">
+                    <button type="submit" class="btn add-btn" id="formSubmitBtn">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // =========================================================================================
+        // 🚀 КОНФИГУРАЦИЯ SUPABASE 🚀
+        // =========================================================================================
+        const SUPABASE_URL = 'https://drrpeeoaatepcrzgoqud.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY';
+        const TABLE_NAME = 'ON1X'; 
+
+        // Инициализация рабочего клиента
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // =========================================================================================
+
+        let clients = []; // Локальный массив клиентов
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const clientContainer = document.getElementById('clientContainer');
+            const addButton = document.getElementById('addButton');
+            const searchInput = document.getElementById('searchInput');
+
+            // Модальное окно Информации
+            const infoModal = document.getElementById('infoModal');
+            const infoModalContentDiv = document.getElementById('infoModalContent');
+            const infoModalCloseBtn = document.querySelector('.info-modal-close');
+            const infoModalEditBtn = document.getElementById('infoModalEditBtn');
+            const infoModalDeleteBtn = document.getElementById('infoModalDeleteBtn');
+            
+            // Модальное окно Формы
+            const formModal = document.getElementById('formModal');
+            const formModalTitle = document.getElementById('formModalTitle');
+            const formModalCloseBtn = document.querySelector('.form-modal-close');
+            const clientForm = document.getElementById('clientForm');
+
+            // Поля формы 
+            const formClientId = document.getElementById('formClientId'); 
+            const formPrimaryId = document.getElementById('formPrimaryId'); // <--- ДОБАВЛЕНО: Primary Key ID
+            const formKey = document.getElementById('formKey');
+            const formId = document.getElementById('formId'); // Telegram ID
+            const formUsername = document.getElementById('formUsername');
+            const formLimit = document.getElementById('formLimit');
+            const formServer = document.getElementById('formServer');
+            const formStatus = document.getElementById('formStatus');
+            const formMes = document.getElementById('formMes');
+            const formKeySil = document.getElementById('formKeySil');
+
+
+            // ** 1. КОНСТАНТЫ СТАТУСОВ **
+            const STORAGE_KEY = 'on1xAdminClientsData';
+            const STATUS_MAP = {
+                'Партнер': '🔵 Партнер',
+                'Отключена': '🔴 Отключена',
+                'Активная': '🟢 Активная',
+                'Закончилась': '🟡 Закончилась'
+            };
+            const STATUS_CLASSES = {
+                'Партнер': 'status-partner',
+                'Отключена': 'status-disabled',
+                'Активная': 'status-active',
+                'Закончилась': 'status-expired'
+            };
+
+
+            // ** 2. ФУНКЦИИ ДЛЯ РАБОТЫ С SUPABASE **
+
+            // Асинхронная функция для ЗАГРУЗКИ данных из Supabase
+            async function loadClients() {
+                let initialClients = [];
+                
+                const { data, error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .order('Key', { ascending: true }); 
+
+                if (error) {
+                    console.error('❌ Ошибка загрузки Supabase:', error);
+                } else {
+                    initialClients = data;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
+                }
+                
+                return initialClients;
+            }
+
+            // ** 3. ФУНКЦИЯ КОПИРОВАНИЯ (ГЛОБАЛЬНАЯ) **
+            window.copyKeySil = function(text) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert('Ключ скопирован в буфер обмена!');
+                    }).catch(err => {
+                        console.error('Не удалось скопировать текст: ', err);
+                        alert('Не удалось скопировать ключ. Попробуйте вручную.');
+                    });
+                } else {
+                    alert('Ваш браузер не поддерживает автоматическое копирование. Скопируйте вручную: ' + text);
+                }
+            }
+
+
+            // ** 4. ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ КЛИЕНТА **
+            function createClientCard(client) {
+                const card = document.createElement('div');
+                card.className = 'client-card';
+                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем ID для идентификации в UI
+                card.setAttribute('data-id', client.id); 
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="client-key-display">№ ключа: ${client.Key || 'Нет ключа'}</span>
+                        <button class="btn info-btn" data-id="${client.id}">Информация</button> 
+                    </div>
+                `;
+
+                // Обработчик для кнопки "Информация"
+                card.querySelector('.info-btn').addEventListener('click', (e) => {
+                    const clientId = e.currentTarget.getAttribute('data-id');
+                    // Ищем по ID (который всегда существует)
+                    const clientData = clients.find(c => String(c.id) === clientId); 
+                    if (clientData) {
+                        openInfoModal(clientData);
+                    }
+                });
+                
+                return card;
+            }
+
+            // ** 5. ФУНКЦИЯ ОТОБРАЖЕНИЯ ВСЕХ КЛИЕНТОВ **
+            function renderClients(clientList) {
+                clientContainer.innerHTML = ''; 
+                if (clientList.length === 0) {
+                    clientContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777; margin-top: 30px;">Клиенты не найдены. Проверьте консоль F12 на наличие ошибок.</p>';
+                }
+                clientList.forEach(client => {
+                    clientContainer.appendChild(createClientCard(client));
+                });
+            }
+
+
+            // ** 6. ЛОГИКА МОДАЛЬНЫХ ОКОН **
+
+            function openModal(modal) {
+                modal.classList.add('is-active');
+            }
+
+            function closeModal(modal) {
+                modal.classList.remove('is-active');
+            }
+            
+            // --- Информационное окно (InfoModal) ---
+            function openInfoModal(client) {
+                const fullStatusText = STATUS_MAP[client.Status] || 'Нет данных';
+                const statusClass = STATUS_CLASSES[client.Status] || '';
+                
+                infoModalContentDiv.innerHTML = `
+                    <h2>Информация</h2>
+                    
+                    <div class="centered-status">
+                        <span class="${statusClass}">${fullStatusText}</span>
+                    </div>
+
+                    <p><strong>Номер ключа:</strong> ${client.Key || 'Нет данных'}</p>
+                    <p><strong>Сервер:</strong> ${client.Server || 'Нет данных'}</p>
+                    <p><strong>Лимит:</strong> ${client.Limit || 'Нет данных'}</p>
+                    <p><strong>Telegram ID:</strong> ${client.TGid || 'Нет данных'}</p>
+                    <p><strong>Username:</strong> ${client.Username || 'Нет данных'}</p>
+                    
+                    <p id="keySilLabel">Ключ:</p>
+                    <div class="key-sil-display">
+                        <span class="key-sil-text" id="displayKeySilText">${client.Keylink || 'Нет данных'}</span>
+                        <button class="copy-btn" onclick="copyKeySil('${client.Keylink || ''}')">📋</button>
+                    </div>
+                    
+                    <a href="${client.Message || '#'}" target="_blank" class="btn message-btn">Сообщение</a>
+                `;
+                
+                // Настройка кнопок действий
+                infoModalEditBtn.onclick = () => {
+                    closeModal(infoModal);
+                    openFormModal('edit', client);
+                };
+
+                infoModalDeleteBtn.onclick = () => {
+                    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Передаем ID для удаления
+                    handleDelete(client.id); 
+                };
+
+                openModal(infoModal);
+            }
+            
+            // --- Форма Добавления/Редактирования (FormModal) ---
+            function openFormModal(mode, client = null) {
+                clientForm.reset();
+                formClientId.value = '';
+                formPrimaryId.value = ''; // Сброс ID
+
+                if (mode === 'add') {
+                    formModalTitle.textContent = 'Добавить клиента';
+                    formLimit.value = ""; 
+                    formServer.value = "";
+                    formStatus.value = "";
+                    formUsername.value = "";
+                } else {
+                    formModalTitle.textContent = `Редактировать клиента ${client.Key}`;
+                    
+                    // Заполнение полей для редактирования
+                    formPrimaryId.value = client.id; // <--- СОХРАНЯЕМ ID
+                    formClientId.value = client.TGid; // Уникальный ID для поиска
+                    formKey.value = client.Key || '';
+                    formId.value = client.TGid || '';
+                    formUsername.value = client.Username && client.Username !== 'Нет данных' ? client.Username : ''; 
+                    formLimit.value = client.Limit || '';
+                    formServer.value = client.Server || '';
+                    formStatus.value = client.Status || '';
+                    formMes.value = client.Message || '';
+                    formKeySil.value = client.Keylink || '';
+                }
+                openModal(formModal);
+            }
+
+            // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
+            
+            // Добавление клиента
+            addButton.addEventListener('click', () => {
+                openFormModal('add');
+            });
+            
+            // ** ИСПРАВЛЕННАЯ ВЕРСИЯ: Отправка формы (Добавление/Редактирование) **
+            clientForm.addEventListener('submit', async (e) => { 
+                e.preventDefault();
+
+                const isEditing = !!formPrimaryId.value; // Используем formPrimaryId для определения режима
+                const primaryId = formPrimaryId.value;    // <--- ID для UPDATE
+                const newTGid = formId.value;
+                const clientKey = formKey.value;
+                
+                // Валидация уникальности TGid при добавлении (проверяем, что нет дубликата)
+                if (!isEditing && newTGid && clients.some(c => String(c.TGid) === newTGid)) {
+                    alert('Ошибка: Клиент с таким Telegram ID уже существует!');
+                    return;
+                }
+                
+                const finalUsername = formUsername.value.trim() || 'Нет данных';
+
+                // Создаем объект с названиями колонок Supabase
+                const clientData = {
+                    TGid: newTGid,
+                    Key: clientKey,
+                    Keylink: formKeySil.value,
+                    Status: formStatus.value,
+                    Server: formServer.value,
+                    Limit: formLimit.value,
+                    Message: formMes.value,
+                    Username: finalUsername 
+                };
+
+                let response, action;
+
+                if (isEditing) {
+                    // Редактирование (UPDATE) - ищем по ID (Primary Key)
+                    response = await supabaseClient
+                        .from(TABLE_NAME)
+                        .update(clientData)
+                        .eq('id', primaryId); 
+                    action = 'отредактирован';
+                } else {
+                    // Добавление (INSERT)
+                    response = await supabaseClient
+                        .from(TABLE_NAME)
+                        .insert([clientData]);
+                    action = 'добавлен';
+                }
+
+                if (response.error) {
+                    console.error('Ошибка Supabase при сохранении:', response.error);
+                    alert(`Ошибка при сохранении данных: ${response.error.message}`);
+                } else {
+                    // 🟢 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ПЕРЕЗАГРУЖАЕМ ДАННЫЕ
+                    clients = await loadClients(); 
+                    renderClients(clients);
+                    
+                    closeModal(formModal);
+                    alert(`Клиент ${clientKey || clientData.TGid} успешно ${action} и сохранен!`);
+                }
+            });
+
+
+            // Обработчик удаления
+            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принимаем ID (Primary Key)
+            async function handleDelete(clientIdToDelete) { 
+                if (confirm(`Вы уверены, что хотите удалить клиента ID ${clientIdToDelete}?`)) {
+                    
+                    const { error } = await supabaseClient
+                        .from(TABLE_NAME)
+                        .delete()
+                        // Удаляем по id
+                        .eq('id', clientIdToDelete); 
+
+                    if (error) {
+                        console.error('Ошибка Supabase при удалении:', error);
+                        alert(`Ошибка при удалении данных: ${error.message}`);
+                    } else {
+                        // Успешное удаление, обновляем данные
+                        clients = await loadClients(); 
+                        renderClients(clients);
+                        closeModal(infoModal); 
+                        alert(`Клиент ${clientIdToDelete || 'без ID'} удален.`);
+                    }
+                }
+            }
+
+
+            // ** ИСПРАВЛЕННАЯ ВЕРСИЯ: Обработчик поиска **
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                
+                const filteredClients = clients.filter(client => {
+                    
+                    // 1. Приведение всех полей к строке для безопасного поиска
+                    const tgIdStr = String(client.TGid || '').toLowerCase();
+                    const keyStr = String(client.Key || '').toLowerCase();
+                    const keyLinkStr = String(client.Keylink || '').toLowerCase();
+                    const serverStr = String(client.Server || '').toLowerCase();
+                    const usernameStr = String(client.Username || '').toLowerCase();
+                    const idStr = String(client.id || '').toLowerCase(); // Добавим поиск по ID
+                    
+                    // 2. Поиск по статусу
+                    const statusMapped = STATUS_MAP[client.Status] ? STATUS_MAP[client.Status].toLowerCase() : (client.Status ? client.Status.toLowerCase() : '');
+                    
+                    return tgIdStr.includes(searchTerm) ||
+                           keyStr.includes(searchTerm) ||
+                           keyLinkStr.includes(searchTerm) ||
+                           serverStr.includes(searchTerm) ||
+                           usernameStr.includes(searchTerm) ||
+                           idStr.includes(searchTerm) || // Поиск по ID
+                           statusMapped.includes(searchTerm);
+                });
+                renderClients(filteredClients);
+            });
+            
+            // Закрытие модальных окон
+            infoModalCloseBtn.addEventListener('click', () => closeModal(infoModal));
+            formModalCloseBtn.addEventListener('click', () => closeModal(formModal));
+
+            // Закрытие по клику вне модального окна
+            window.addEventListener('click', (event) => {
+                if (event.target === infoModal) {
+                    closeModal(infoModal);
+                }
+                if (event.target === formModal) {
+                    closeModal(formModal);
+                }
+            });
+
+
+            // Инициализация
+            async function initializeApp() {
+                clients = await loadClients();
+                renderClients(clients);
+            }
+
+            initializeApp();
+        });
+    </script>
 </body>
 </html>
