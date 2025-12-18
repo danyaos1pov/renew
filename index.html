@@ -2,730 +2,353 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>ON1X ADMIN</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SPYFALL MEGA PACK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --color-bg-light: #f7f9fc;      
-            --color-bg-card: #ffffff;       
-            --color-text-dark: #333333;     
-            --color-accent-blue: #007bff;   
-            --color-shadow: rgba(0, 0, 0, 0.1);
-            --color-border: #e0e0e0;        
+            --accent: #00f2ff;
+            --bg: #0a0e14;
+            --card-dark: #151a21;
+            --glass: rgba(255, 255, 255, 0.05);
+            --danger: #ff4d4d;
+            --success: #00ff88;
         }
-        
+
+        * { 
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; 
+            font-family: 'Montserrat', sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--color-bg-light);
-            color: var(--color-text-dark);
             margin: 0;
-            padding: 15px;
-            line-height: 1.5;
-        }
-
-        .admin-header, .client-card, .modal-content {
-            border-radius: 12px;
-            box-shadow: 0 4px 10px var(--color-shadow);
-            transition: all 0.3s ease;
-        }
-        
-        .admin-header {
-            background-color: var(--color-bg-card);
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-
-        .admin-header h1 {
-            font-size: 2em;
-            color: var(--color-accent-blue);
-            margin: 0 0 20px 0;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .controls {
+            padding: 0;
+            background-color: var(--bg);
+            color: white;
+            height: 100dvh;
             display: flex;
-            flex-direction: column; 
-            width: 100%; 
-            gap: 12px;
+            flex-direction: column;
+            overflow: hidden;
+            width: 100%;
         }
 
-        #searchInput {
-            padding: 12px;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box; 
-            font-size: 1em;
-            color: var(--color-text-dark);
+        .bg-glow {
+            position: absolute;
+            width: 250px; height: 250px;
+            background: var(--accent); filter: blur(120px);
+            opacity: 0.1; z-index: -1; top: 10%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .wrapper {
+            flex: 1;
+            display: flex; flex-direction: column;
+            padding: 15px; max-width: 650px; margin: 0 auto; width: 100%;
+            height: 100%;
+        }
+
+        .screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.2s ease-out; }
+        .screen.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        h1 { font-weight: 900; font-size: 2.2rem; margin: 0; text-align: center; letter-spacing: -1px; }
+        .tagline { color: var(--accent); font-size: 0.65rem; text-align: center; letter-spacing: 3px; margin-bottom: 25px; }
+
+        .setting-box {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 14px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .num-input {
+            background: #000;
+            border: 1px solid var(--accent); color: var(--accent);
+            border-radius: 8px; padding: 8px; width: 60px; text-align: center; 
+            font-size: 1.1rem; font-weight: bold; outline: none;
         }
 
         .btn {
-            padding: 12px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1em;
-            transition: background-color 0.3s, transform 0.1s;
+            background: white;
+            color: black; border: none; padding: 18px;
+            border-radius: 16px; font-weight: 900; text-transform: uppercase;
+            font-size: 0.9rem; cursor: pointer; transition: 0.2s; width: 100%;
         }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .add-btn {
-            background-color: #28a745; 
-            color: white;
-            width: 100%; 
-        }
-
-        .info-btn {
-            background-color: var(--color-accent-blue);
-            color: white;
-            padding: 10px 18px;
-        }
-
-        .client-container {
-            display: grid;
-            grid-template-columns: 1fr; 
-            gap: 15px; 
-            padding: 0;
-        }
-
-        .client-card {
-            background-color: var(--color-bg-card);
-            padding: 18px;
-            border-left: 4px solid var(--color-accent-blue); 
-        }
+        .btn:active { transform: scale(0.96); filter: brightness(0.9); }
+        .btn-neon { background: var(--accent); box-shadow: 0 4px 15px rgba(0, 242, 255, 0.2); margin-top: auto; }
         
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .btn-danger-outline { 
+            background: transparent; 
+            color: var(--danger); 
+            border: 1px solid rgba(255, 77, 77, 0.3); 
+            margin-top: 10px; 
+            padding: 12px; 
         }
 
-        .client-key-display {
-            font-size: 1.2em;
-            font-weight: 700;
-            color: var(--color-text-dark);
-        }
-        
-        .modal {
-            display: none; 
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto; 
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            box-sizing: border-box;
-        }
+        #timer { font-size: 3.5rem; font-weight: 900; text-align: center; color: var(--accent); margin: 5px 0; }
 
-        .modal.is-active {
-            display: flex; 
-        }
-
-        .modal-content {
-            background-color: var(--color-bg-card);
-            padding: 30px;
-            max-width: 450px;
-            width: 95%; 
-            margin: 10% auto; 
-        }
-        
-        .modal-content h2 {
-            color: var(--color-accent-blue);
-            border-bottom: 2px solid var(--color-border);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            text-align: center; 
-        }
-        
-        .form-group {
+        .hint-container {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
             margin-bottom: 15px;
+            padding: 5px;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--color-text-dark);
-            font-weight: 600;
-            text-align: center; 
+        /* Кастомный скролл для списка локаций */
+        .hint-container::-webkit-scrollbar { width: 4px; }
+        .hint-container::-webkit-scrollbar-track { background: transparent; }
+        .hint-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+        .hint-list { 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            gap: 8px; 
         }
 
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1em;
-            background-color: #f9f9f9;
-            color: var(--color-text-dark);
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid var(--color-border);
-        }
-
-        .modal-footer .btn {
-            flex-grow: 1;
-        }
-
-        .modal-content p strong {
-            font-weight: 600;
-            margin-right: 10px;
-            display: inline-block;
-            min-width: 120px;
-        }
-
-        .centered-status {
+        .hint-item { 
+            font-size: 0.7rem;
+            color: #fff; 
+            padding: 10px 5px; 
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
-            margin-bottom: 15px; 
-            padding: 10px 0; 
-            font-size: 1.3em;
-            font-weight: bold;
-            background-color: #f0f4f7;
-            border-radius: 6px;
-        }
-
-        .key-sil-display {
-            background-color: #f0f0f0;
-            border: 1px solid #ccc;
-            padding: 10px;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            border-radius: 6px;
-            justify-content: flex-start; 
-            text-align: left; 
-        }
-        
-        .key-sil-text {
-            flex-grow: 1; 
-            word-break: break-all;
-            font-size: 0.95em;
-            color: var(--color-text-dark);
-            text-align: left; 
-        }
-        
-        #keySilLabel {
-            font-weight: 600; 
-            margin-top: 20px; 
-            margin-bottom: 5px;
-            text-align: left; 
-        }
-        
-        .copy-btn {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 10px;
-            border-radius: 4px;
-            margin-left: 10px;
+            justify-content: center;
+            min-height: 45px;
             cursor: pointer;
-            font-size: 16px;
-            line-height: 1;
-            transition: background-color 0.3s;
-            flex-shrink: 0; 
+            line-height: 1.2;
         }
 
-        .message-btn {
-            background-color: #007bff; 
-            color: white; 
-            display:block; 
-            text-align:center; 
-            text-decoration: none; 
-            margin-top: 25px;
+        .hint-item.crossed {
+            opacity: 0.2;
+            text-decoration: line-through;
+            transform: scale(0.95);
+            background: #000;
         }
-        
-        #infoModalEditBtn { background-color: #ffc107; color: #333; }
-        #infoModalDeleteBtn { background-color: #dc3545; color: white; }
 
-        .status-partner { color: #007bff; }
-        .status-disabled { color: #dc3545; }
-        .status-active { color: #28a745; }
-        .status-expired { color: #ffc107; }
-
-        .modal-close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            line-height: 1;
+        .modal {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.97); z-index: 100; padding: 20px;
+            flex-direction: column; justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(15px);
         }
+        .modal.active { display: flex; }
+        .modal-content {
+            width: 100%;
+            max-width: 500px; background: #0f1218; border: 1px solid var(--accent);
+            border-radius: 24px; display: flex; flex-direction: column; max-height: 85vh;
+            overflow: hidden;
+        }
+
+        /* Кастомное пролистывание для модального окна  */
+        .modal-body { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) transparent;
+        }
+
+        .modal-body::-webkit-scrollbar { width: 6px; }
+        .modal-body::-webkit-scrollbar-track { background: transparent; }
+        .modal-body::-webkit-scrollbar-thumb { 
+            background: var(--accent); 
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .q-item { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; font-size: 0.85rem; }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .card-area { flex: 1; perspective: 1000px; margin: 20px 0; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .card-inner.flipped { transform: rotateY(180deg); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-front { background: var(--card-dark); }
+        .card-back { background: white; color: black; transform: rotateY(180deg); text-align: center; }
+
+        #next-btn { transition: opacity 0.3s ease; }
+        .btn-hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
-<body>
-    <header class="admin-header">
-        <h1>ON1X ADMIN</h1>
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="Поиск по клиенту/ключу...">
-            <button id="addButton" class="btn add-btn">➕ Добавить</button>
-        </div>
-    </header>
+<body oncontextmenu="return false;">
 
-    <main class="client-container" id="clientContainer">
-        </main>
-    
-    <div id="infoModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close info-modal-close">&times;</span>
-            <div id="infoModalContent">
+<div class="bg-glow"></div>
+
+<div class="wrapper">
+    <div id="setup" class="screen active">
+        <h1>SPYFALL</h1>
+        <div class="tagline">ULTIMATE PACK</div>
+        <div class="setting-box">
+            <div><b>Игроков</b></div>
+            <input type="number" id="p-count" class="num-input" value="4" min="3">
+        </div>
+        <div class="setting-box">
+            <div><b>Таймер (мин)</b></div>
+            <input type="number" id="t-count" class="num-input" value="5" min="1">
+        </div>
+        <div class="setting-box">
+            <div><b>Список локаций</b></div>
+            <label class="switch">
+                <input type="checkbox" id="hints-toggle" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <button class="btn btn-neon" onclick="startGame()">Начать игру</button>
+    </div>
+
+    <div id="roles" class="screen">
+        <div id="player-indicator" style="text-align: center; font-weight: 900; color: var(--accent);">ИГРОК 1</div>
+        <div class="card-area">
+            <div class="card-inner" id="card" onclick="flipCard()">
+                <div class="card-face card-front">
+                    <span style="font-size: 3.5rem;">🕵️</span>
+                    <p style="color: #444; font-size: 0.7rem; margin-top: 20px;">НАЖМИ ДЛЯ ПРОСМОТРА</p>
                 </div>
-            <div class="modal-footer">
-                <button id="infoModalEditBtn" class="btn">📝 Редактировать</button>
-                <button id="infoModalDeleteBtn" class="btn delete-btn">❌ Удалить</button>
+                <div class="card-face card-back">
+                    <div id="role-status" style="font-size: 0.8rem; font-weight: bold; color: #777;">ТВОЯ РОЛЬ:</div>
+                    <div id="role-main" style="font-size: 1.8rem; font-weight: 900; margin-top: 10px; line-height: 1.1;">ЛОКАЦИЯ</div>
+                </div>
             </div>
         </div>
+        <button class="btn btn-neon" id="next-btn" style="visibility: hidden;" onclick="nextPlayer()">ПРИНЯТО</button>
     </div>
-    
-    <div id="formModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close form-modal-close">&times;</span>
-            <h2 id="formModalTitle">Добавить клиента</h2>
-            <form id="clientForm" autocomplete="off">
-                <input type="hidden" id="formClientId">
-                <input type="hidden" id="formPrimaryId">
-                
-                <div class="form-group">
-                    <label for="formKey">№ ключа</label>
-                    <input type="text" id="formKey" autocomplete="off">
-                </div>
-                
-                <div class="form-group">
-                    <label for="formId">Telegram ID</label>
-                    <input type="text" id="formId" autocomplete="off">
-                </div>
 
-                <div class="form-group">
-                    <label for="formUsername">Username</label>
-                    <input type="text" id="formUsername" autocomplete="off">
-                </div>
-                
-                <div class="form-group">
-                    <label for="formLimit">Лимит устройств</label>
-                    <select id="formLimit" autocomplete="off">
-                        <option value="">Не выбрано</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
-                </div>
+    <div id="game" class="screen">
+        <div id="timer">00:00</div>
+        <div class="hint-container">
+            <div class="hint-list" id="hints"></div>
+        </div>
+        <button class="btn btn-neon" style="background: #1a1a1a; color: var(--accent); box-shadow: none;" onclick="toggleModal('q-modal', true)">Идеи вопросов</button>
+        <button class="btn btn-danger-outline" onclick="confirmReset()">Завершить игру</button>
+    </div>
+</div>
 
-                <div class="form-group">
-                    <label for="formServer">Сервер</label>
-                    <select id="formServer" autocomplete="off">
-                        <option value="">Не выбрано</option>
-                        <option value="🇳🇱 Ниденланды 1">🇳🇱 Ниденланды 1</option>
-                        <option value="🇳🇱 Ниденланды 2">🇳🇱 Ниденланды 2</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="formStatus">Статус ключа</label>
-                    <select id="formStatus" autocomplete="off">
-                        <option value="">Не выбрано</option>
-                        <option value="Партнер">🔵 Партнер</option>
-                        <option value="Отключена">🔴 Отключена</option>
-                        <option value="Активная">🟢 Активная</option>
-                        <option value="Закончилась">🟡 Закончилась</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="formMes">Сообщение (ссылка)</label>
-                    <input type="url" id="formMes" autocomplete="off">
-                </div>
+<div class="modal" id="q-modal">
+    <div class="modal-content">
+        <div class="modal-body" id="questions-list"></div>
+        <div style="padding: 15px;"><button class="btn btn-neon" onclick="toggleModal('q-modal', false)">ЗАКРЫТЬ</button></div>
+    </div>
+</div>
 
-                <div class="form-group">
-                    <label for="formKeySil">Ключ (ссылка)</label>
-                    <input type="text" id="formKeySil" autocomplete="off"> 
-                </div>
-                
-                <div class="modal-footer" style="border-top: none; padding-top: 0;">
-                    <button type="submit" class="btn add-btn" id="formSubmitBtn">Сохранить</button>
-                </div>
-            </form>
+<div class="modal" id="confirm-modal">
+    <div class="modal-content" style="text-align: center; padding: 25px;">
+        <h2 style="margin-top: 0; color: var(--danger);">ВЫХОД</h2>
+        <p style="color: #ccc; margin-bottom: 25px;">Вы действительно хотите завершить текущую игру?</p>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn" style="background: #333; color: white;" onclick="toggleModal('confirm-modal', false)">ОТМЕНА</button>
+            <button class="btn" style="background: var(--danger); color: white;" onclick="resetApp()">ЗАВЕРШИТЬ</button>
         </div>
     </div>
+</div>
 
+<script>
+    const MY_LOCATIONS = ["Пляж", "Лес", "Кафе", "Зоопарк", "Аэропорт", "Школа", "Театр", "Рынок", "Гостиница", "Метро", "Больница", "Кинотеатр", "Парк аттракционов", "Музей", "Спортивная арена", "Ресторан", "Университет", "Ферма", "Торговый центр", "Вокзал", "Лодка", "Водопад", "Скейт-парк", "Автосервис", "Галерея", "Пустыня", "Ледник", "Балкон", "Гараж", "Книжный магазин", "Планетарий", "Кофейня", "Столовая", "Чердак", "Детский сад", "Порт", "Винодельня", "Луг", "Кабинет", "Аквариум", "Гостиная", "Ресторан национальной кухни", "Картинная галерея", "Стадион", "Лодж для отдыха", "Вечеринка", "Ледовая арена", "Оранжерея", "Терраса", "Автобус", "Пекарня", "Велосипедная дорожка", "Детская комната", "Футбольное поле", "Бар", "Поезд", "Ночной клуб", "Парк", "Гаражный комплекс", "Жилой дом", "Ледяная пещера", "Сад во дворе", "Кладовка", "Танцевальная студия", "Супермаркет", "Мастерская", "Рыбная фабрика", "Трамвай", "Садик", "Лаборатория", "Концертный зал", "Площадка для йоги", "Чердак дома", "Автозаправка", "Музыкальная школа", "Летний лагерь", "Ярмарка", "Парк развлечений", "Велосипед", "Фотостудия", "Пиратский корабль", "Гараж для машин", "Детский парк", "Станция метро", "Ледяной фьорд", "Сад с фонтанами", "Рыболовный причал", "Клуб настольных игр", "Станция электрички", "Тренажерный зал", "Подвал", "Гостевой дом", "Кузница", "Площадка для баскетбола", "Парк отдыха", "Пивоварня", "Автовокзал", "Чердак квартиры", "Кулинарная школа", "Театральная студия", "Деревенская ферма", "Летняя терраса", "Городская площадь", "Студия дизайна", "Киношкола", "Кабинет дома", "Аквариум с морскими животными", "Офис", "Песчаный пляж", "Сквер", "Детский лагерь", "Велосипедная дорожка в парке", "Клуб по интересам", "Городской сад", "Походная база", "Тропа в лесу", "Кузовной цех", "Рыбацкая деревня", "Музей науки", "Национальный парк", "Площадка для волейбола", "Автосалон", "Банкомат", "Рыбный рынок", "Парк под открытым небом", "Ледяная гора", "Пекарня с выпечкой", "Кабинет директора", "Сад с оранжереей", "Площадка для скейтборда", "Танцевальная школа", "Стадион для легкой атлетики", "Водная станция", "Почта", "Клуб для детей", "Автобусная остановка", "Площадка для тенниса", "Фабрика игрушек", "Рынок овощей и фруктов", "Библиотека", "Гостиница для туристов", "Велопарковка", "Кинотеатр под открытым небом", "Котельная", "Концертная площадка", "Летний кинотеатр", "Плантация фруктов", "Рыбный причал", "Игровая комната", "Тренажерная зона", "Сценическая площадка", "Картинная мастерская", "Летний сад", "Детский парк развлечений", "Автодром", "Рыбацкий домик", "Кофейня с террасой", "Водопад в горах", "Лесной массив", "Оранжерея с тропическими растениями", "Фабрика шоколада", "Пляж с песком", "Кабинет учителя", "Тренировочная площадка", "Скейт-парк у школы", "Вечеринка на открытом воздухе", "Городской сад с фонтанном", "Аквариум с медузами", "Стадион для футбола", "Лаборатория химии", "Театр для детей", "Музыкальная студия", "Велопарковка у парка", "Детская площадка во дворе", "Кинотеатр для взрослых", "Ферма с животными", "Рыбацкая лодка", "Летний кемпинг", "Автобусный парк", "Сквер с скамейками", "Чердак школы", "Городской рынок", "Ледяная пещера", "Сад с розами", "Пляж с пальмами", "Тренажерный зал дома", "Концертный парк", "Лесная тропа", "Фабрика пиццы", "Банковский офис", "Площадка для игры в футбол", "Кабинет директора школы", "Рыбная ферма", "Музыкальная площадка на улице", "Автозаправка возле дороги", "Скейт-парк на площади", "Гаражный бокс", "Детская комната дома", "Парк для прогулок", "Лодка на реке"];
+    const QUESTIONS = ["Можно ли здесь летать?", "Здесь готовят еду?", "Слышно ли много разговоров?", "Можно ли плавать здесь?", "Нужно ли показывать паспорт?", "Есть ли книги?", "Можно ли заниматься спортом?", "Можно ли строить что-то руками?", "Нужно ли иметь учебники?", "Есть ли здесь лекарства?", "Можно ли здесь встречать много людей?", "Нужно ли брать купальник?", "Есть ли столики?", "Можно ли здесь рисовать?", "Можно ли здесь делать операции?", "Солнечно ли здесь?", "Есть ли официанты?", "Можно ли смотреть фильмы?", "Здесь учат новому?", "Можно ли просто пройтись?", "Нужно ли носить форму?", "Можно ли здесь спать?", "Можно ли здесь покупать?", "Слышно ли музыку?", "Нужно ли брать спорт-одежду?", "Здесь продают еду на вынос?", "Можно ли здесь кататься на аттракционах?", "Нужно ли ждать очереди?", "Есть ли кассы?", "Можно ли смотреть экспонаты?", "Здесь много зелени?", "Есть ли сцена?", "Нужно ли покупать билеты?", "Можно ли здесь загорать?", "Здесь лечат людей?", "Можно ли здесь играть в игры?", "Нужно ли быть в тишине?", "Можно ли здесь есть мороженое?", "Нужно ли предъявлять документы?", "Можно ли фотографировать?", "Здесь продают сувениры?", "Можно ли встретить знаменитость?", "Здесь учат детей?", "Можно ли прыгать в воду?", "Есть ли здесь аптечка?", "Нужно ли покупать билет?", "Слышно ли здесь машины?", "Есть ли телевизоры?", "Есть ли указатели?", "Здесь продают одежду?", "Можно ли отдыхать на скамейках?", "Можно ли встретить друзей?", "Есть ли здесь фонтаны?", "Можно ли брать еду руками?", "Есть ли места для пикника?", "Нужно ли приносить свои вещи?", "Здесь лечат животных?", "Есть ли здесь выставки?", "Можно ли кататься на лодках?", "Здесь много людей?", "Есть ли здесь тренажеры?", "Здесь учат взрослых?", "Есть ли здесь врачи?", "Можно ли строить замки из песка?", "Нужно ли иметь билеты?", "Здесь можно сидеть на траве?", "Есть ли здесь кабинеты?", "Здесь продают сладости?", "Можно ли учиться новому?", "Можно ли кормить рыб?", "Можно ли здесь пить воду?", "Есть ли здесь кафе?", "Можно ли ловить рыбу?", "Есть ли спортивные площадки?", "Можно ли заниматься йогой?", "Есть ли здесь детские площадки?", "Можно ли наблюдать за животными?", "Есть ли парковка?", "Можно ли пить кофе?"];
+    
+    let state = { p: 0, spy: 0, word: "", cur: 0, t: null };
+    let sessionLocations = [];
 
-    <script>
-        // =========================================================================================
-        // 🚀 КОНФИГУРАЦИЯ SUPABASE 🚀
-        // =========================================================================================
-        const SUPABASE_URL = 'https://drrpeeoaatepcrzgoqud.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRycnBlZW9hYXRlcGNyemdvcXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQwMDMzMDksImV4cCI6MjA3OTU3OTMwOX0.VH6ovOXrfTUTjOInd6BB4fgrrpj-jZWRjLeZ8x-iElY';
-        const TABLE_NAME = 'ON1X'; 
+    document.getElementById('questions-list').innerHTML = QUESTIONS.map(q => `<div class="q-item">${q}</div>`).join('');
 
-        // Инициализация рабочего клиента
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        // =========================================================================================
+    function startGame() {
+        state.p = +document.getElementById('p-count').value;
+        sessionLocations = [...MY_LOCATIONS].sort(() => Math.random() - 0.5).slice(0, 14);
+        state.word = sessionLocations[Math.floor(Math.random() * sessionLocations.length)];
+        state.spy = Math.floor(Math.random() * state.p);
+        state.cur = 0;
+        updateTimerText(+document.getElementById('t-count').value * 60);
+        show('roles');
+        updateCard();
+    }
 
-        let clients = []; // Локальный массив клиентов
+    function updateCard() {
+        document.getElementById('player-indicator').innerText = `ИГРОК ${state.cur + 1}`;
+        document.getElementById('card').classList.remove('flipped');
+        const btn = document.getElementById('next-btn');
+        btn.classList.remove('btn-hidden');
+        btn.style.visibility = 'hidden';
+        const isSpy = state.cur === state.spy;
+        document.getElementById('role-main').innerText = isSpy ? "ШПИОН" : state.word;
+        document.getElementById('role-status').innerText = isSpy ? "ВНИМАНИЕ!" : "ВАША ЛОКАЦИЯ:";
+        document.getElementById('role-status').style.color = isSpy ? "#ff4d4d" : "#00ff88";
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const clientContainer = document.getElementById('clientContainer');
-            const addButton = document.getElementById('addButton');
-            const searchInput = document.getElementById('searchInput');
+    function flipCard() {
+        document.getElementById('card').classList.add('flipped');
+        document.getElementById('next-btn').style.visibility = 'visible';
+    }
 
-            // Модальное окно Информации
-            const infoModal = document.getElementById('infoModal');
-            const infoModalContentDiv = document.getElementById('infoModalContent');
-            const infoModalCloseBtn = document.querySelector('.info-modal-close');
-            const infoModalEditBtn = document.getElementById('infoModalEditBtn');
-            const infoModalDeleteBtn = document.getElementById('infoModalDeleteBtn');
-            
-            // Модальное окно Формы
-            const formModal = document.getElementById('formModal');
-            const formModalTitle = document.getElementById('formModalTitle');
-            const formModalCloseBtn = document.querySelector('.form-modal-close');
-            const clientForm = document.getElementById('clientForm');
+    function nextPlayer() {
+        const btn = document.getElementById('next-btn');
+        btn.classList.add('btn-hidden');
+        document.getElementById('card').classList.remove('flipped');
+        setTimeout(() => {
+            state.cur++;
+            if (state.cur < state.p) updateCard();
+            else runTimer();
+        }, 300);
+    }
 
-            // Поля формы 
-            const formClientId = document.getElementById('formClientId'); 
-            const formPrimaryId = document.getElementById('formPrimaryId'); // <--- ДОБАВЛЕНО: Primary Key ID
-            const formKey = document.getElementById('formKey');
-            const formId = document.getElementById('formId'); // Telegram ID
-            const formUsername = document.getElementById('formUsername');
-            const formLimit = document.getElementById('formLimit');
-            const formServer = document.getElementById('formServer');
-            const formStatus = document.getElementById('formStatus');
-            const formMes = document.getElementById('formMes');
-            const formKeySil = document.getElementById('formKeySil');
+    function updateTimerText(sec) {
+        let abs = Math.abs(sec);
+        document.getElementById('timer').innerText = `${String(Math.floor(abs/60)).padStart(2,'0')}:${String(abs%60).padStart(2,'0')}`;
+        document.getElementById('timer').style.color = sec <= 0 ? 'var(--danger)' : 'var(--accent)';
+    }
 
+    function runTimer() {
+        show('game');
+        const h = document.getElementById('hints');
+        if (document.getElementById('hints-toggle').checked) {
+            h.parentElement.style.display = 'block';
+            h.innerHTML = [...sessionLocations].sort((a,b) => a.localeCompare(b)).map(w => `
+                <div class="hint-item" onclick="toggleLocation(this)">${w}</div>
+            `).join('');
+        } else h.parentElement.style.display = 'none';
 
-            // ** 1. КОНСТАНТЫ СТАТУСОВ **
-            const STORAGE_KEY = 'on1xAdminClientsData';
-            const STATUS_MAP = {
-                'Партнер': '🔵 Партнер',
-                'Отключена': '🔴 Отключена',
-                'Активная': '🟢 Активная',
-                'Закончилась': '🟡 Закончилась'
-            };
-            const STATUS_CLASSES = {
-                'Партнер': 'status-partner',
-                'Отключена': 'status-disabled',
-                'Активная': 'status-active',
-                'Закончилась': 'status-expired'
-            };
+        let sec = +document.getElementById('t-count').value * 60;
+        if (state.t) clearInterval(state.t);
+        state.t = setInterval(() => {
+            sec--;
+            updateTimerText(sec);
+        }, 1000);
+    }
 
+    function toggleLocation(el) {
+        el.classList.toggle('crossed');
+        if (window.navigator.vibrate) window.navigator.vibrate(10);
+    }
 
-            // ** 2. ФУНКЦИИ ДЛЯ РАБОТЫ С SUPABASE **
+    function toggleModal(id, val) { document.getElementById(id).classList.toggle('active', val); }
 
-            // Асинхронная функция для ЗАГРУЗКИ данных из Supabase
-            async function loadClients() {
-                let initialClients = [];
-                
-                const { data, error } = await supabaseClient
-                    .from(TABLE_NAME)
-                    .select('*')
-                    .order('Key', { ascending: true }); 
+    function confirmReset() { toggleModal('confirm-modal', true); }
 
-                if (error) {
-                    console.error('❌ Ошибка загрузки Supabase:', error);
-                } else {
-                    initialClients = data;
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
-                }
-                
-                return initialClients;
-            }
+    function resetApp() {
+        toggleModal('confirm-modal', false);
+        clearInterval(state.t);
+        show('setup');
+    }
 
-            // ** 3. ФУНКЦИЯ КОПИРОВАНИЯ (ГЛОБАЛЬНАЯ) **
-            window.copyKeySil = function(text) {
-                if (navigator.clipboard) {
-                    navigator.clipboard.writeText(text).then(() => {
-                        alert('Ключ скопирован в буфер обмена!');
-                    }).catch(err => {
-                        console.error('Не удалось скопировать текст: ', err);
-                        alert('Не удалось скопировать ключ. Попробуйте вручную.');
-                    });
-                } else {
-                    alert('Ваш браузер не поддерживает автоматическое копирование. Скопируйте вручную: ' + text);
-                }
-            }
-
-
-            // ** 4. ФУНКЦИЯ СОЗДАНИЯ КАРТОЧКИ КЛИЕНТА **
-            function createClientCard(client) {
-                const card = document.createElement('div');
-                card.className = 'client-card';
-                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем ID для идентификации в UI
-                card.setAttribute('data-id', client.id); 
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <span class="client-key-display">№ ключа: ${client.Key || 'Нет ключа'}</span>
-                        <button class="btn info-btn" data-id="${client.id}">Информация</button> 
-                    </div>
-                `;
-
-                // Обработчик для кнопки "Информация"
-                card.querySelector('.info-btn').addEventListener('click', (e) => {
-                    const clientId = e.currentTarget.getAttribute('data-id');
-                    // Ищем по ID (который всегда существует)
-                    const clientData = clients.find(c => String(c.id) === clientId); 
-                    if (clientData) {
-                        openInfoModal(clientData);
-                    }
-                });
-                
-                return card;
-            }
-
-            // ** 5. ФУНКЦИЯ ОТОБРАЖЕНИЯ ВСЕХ КЛИЕНТОВ **
-            function renderClients(clientList) {
-                clientContainer.innerHTML = ''; 
-                if (clientList.length === 0) {
-                    clientContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777; margin-top: 30px;">Клиенты не найдены. Проверьте консоль F12 на наличие ошибок.</p>';
-                }
-                clientList.forEach(client => {
-                    clientContainer.appendChild(createClientCard(client));
-                });
-            }
-
-
-            // ** 6. ЛОГИКА МОДАЛЬНЫХ ОКОН **
-
-            function openModal(modal) {
-                modal.classList.add('is-active');
-            }
-
-            function closeModal(modal) {
-                modal.classList.remove('is-active');
-            }
-            
-            // --- Информационное окно (InfoModal) ---
-            function openInfoModal(client) {
-                const fullStatusText = STATUS_MAP[client.Status] || 'Нет данных';
-                const statusClass = STATUS_CLASSES[client.Status] || '';
-                
-                infoModalContentDiv.innerHTML = `
-                    <h2>Информация</h2>
-                    
-                    <div class="centered-status">
-                        <span class="${statusClass}">${fullStatusText}</span>
-                    </div>
-
-                    <p><strong>Номер ключа:</strong> ${client.Key || 'Нет данных'}</p>
-                    <p><strong>Сервер:</strong> ${client.Server || 'Нет данных'}</p>
-                    <p><strong>Лимит:</strong> ${client.Limit || 'Нет данных'}</p>
-                    <p><strong>Telegram ID:</strong> ${client.TGid || 'Нет данных'}</p>
-                    <p><strong>Username:</strong> ${client.Username || 'Нет данных'}</p>
-                    
-                    <p id="keySilLabel">Ключ:</p>
-                    <div class="key-sil-display">
-                        <span class="key-sil-text" id="displayKeySilText">${client.Keylink || 'Нет данных'}</span>
-                        <button class="copy-btn" onclick="copyKeySil('${client.Keylink || ''}')">📋</button>
-                    </div>
-                    
-                    <a href="${client.Message || '#'}" target="_blank" class="btn message-btn">Сообщение</a>
-                `;
-                
-                // Настройка кнопок действий
-                infoModalEditBtn.onclick = () => {
-                    closeModal(infoModal);
-                    openFormModal('edit', client);
-                };
-
-                infoModalDeleteBtn.onclick = () => {
-                    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Передаем ID для удаления
-                    handleDelete(client.id); 
-                };
-
-                openModal(infoModal);
-            }
-            
-            // --- Форма Добавления/Редактирования (FormModal) ---
-            function openFormModal(mode, client = null) {
-                clientForm.reset();
-                formClientId.value = '';
-                formPrimaryId.value = ''; // Сброс ID
-
-                if (mode === 'add') {
-                    formModalTitle.textContent = 'Добавить клиента';
-                    formLimit.value = ""; 
-                    formServer.value = "";
-                    formStatus.value = "";
-                    formUsername.value = "";
-                } else {
-                    formModalTitle.textContent = `Редактировать клиента ${client.Key}`;
-                    
-                    // Заполнение полей для редактирования
-                    formPrimaryId.value = client.id; // <--- СОХРАНЯЕМ ID
-                    formClientId.value = client.TGid; // Уникальный ID для поиска
-                    formKey.value = client.Key || '';
-                    formId.value = client.TGid || '';
-                    formUsername.value = client.Username && client.Username !== 'Нет данных' ? client.Username : ''; 
-                    formLimit.value = client.Limit || '';
-                    formServer.value = client.Server || '';
-                    formStatus.value = client.Status || '';
-                    formMes.value = client.Message || '';
-                    formKeySil.value = client.Keylink || '';
-                }
-                openModal(formModal);
-            }
-
-            // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
-            
-            // Добавление клиента
-            addButton.addEventListener('click', () => {
-                openFormModal('add');
-            });
-            
-            // ** ИСПРАВЛЕННАЯ ВЕРСИЯ: Отправка формы (Добавление/Редактирование) **
-            clientForm.addEventListener('submit', async (e) => { 
-                e.preventDefault();
-
-                const isEditing = !!formPrimaryId.value; // Используем formPrimaryId для определения режима
-                const primaryId = formPrimaryId.value;    // <--- ID для UPDATE
-                const newTGid = formId.value;
-                const clientKey = formKey.value;
-                
-                // Валидация уникальности TGid при добавлении (проверяем, что нет дубликата)
-                if (!isEditing && newTGid && clients.some(c => String(c.TGid) === newTGid)) {
-                    alert('Ошибка: Клиент с таким Telegram ID уже существует!');
-                    return;
-                }
-                
-                const finalUsername = formUsername.value.trim() || 'Нет данных';
-
-                // Создаем объект с названиями колонок Supabase
-                const clientData = {
-                    TGid: newTGid,
-                    Key: clientKey,
-                    Keylink: formKeySil.value,
-                    Status: formStatus.value,
-                    Server: formServer.value,
-                    Limit: formLimit.value,
-                    Message: formMes.value,
-                    Username: finalUsername 
-                };
-
-                let response, action;
-
-                if (isEditing) {
-                    // Редактирование (UPDATE) - ищем по ID (Primary Key)
-                    response = await supabaseClient
-                        .from(TABLE_NAME)
-                        .update(clientData)
-                        .eq('id', primaryId); 
-                    action = 'отредактирован';
-                } else {
-                    // Добавление (INSERT)
-                    response = await supabaseClient
-                        .from(TABLE_NAME)
-                        .insert([clientData]);
-                    action = 'добавлен';
-                }
-
-                if (response.error) {
-                    console.error('Ошибка Supabase при сохранении:', response.error);
-                    alert(`Ошибка при сохранении данных: ${response.error.message}`);
-                } else {
-                    // 🟢 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ПЕРЕЗАГРУЖАЕМ ДАННЫЕ
-                    clients = await loadClients(); 
-                    renderClients(clients);
-                    
-                    closeModal(formModal);
-                    alert(`Клиент ${clientKey || clientData.TGid} успешно ${action} и сохранен!`);
-                }
-            });
-
-
-            // Обработчик удаления
-            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принимаем ID (Primary Key)
-            async function handleDelete(clientIdToDelete) { 
-                if (confirm(`Вы уверены, что хотите удалить клиента ID ${clientIdToDelete}?`)) {
-                    
-                    const { error } = await supabaseClient
-                        .from(TABLE_NAME)
-                        .delete()
-                        // Удаляем по id
-                        .eq('id', clientIdToDelete); 
-
-                    if (error) {
-                        console.error('Ошибка Supabase при удалении:', error);
-                        alert(`Ошибка при удалении данных: ${error.message}`);
-                    } else {
-                        // Успешное удаление, обновляем данные
-                        clients = await loadClients(); 
-                        renderClients(clients);
-                        closeModal(infoModal); 
-                        alert(`Клиент ${clientIdToDelete || 'без ID'} удален.`);
-                    }
-                }
-            }
-
-
-            // ** ИСПРАВЛЕННАЯ ВЕРСИЯ: Обработчик поиска **
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase().trim();
-                
-                const filteredClients = clients.filter(client => {
-                    
-                    // 1. Приведение всех полей к строке для безопасного поиска
-                    const tgIdStr = String(client.TGid || '').toLowerCase();
-                    const keyStr = String(client.Key || '').toLowerCase();
-                    const keyLinkStr = String(client.Keylink || '').toLowerCase();
-                    const serverStr = String(client.Server || '').toLowerCase();
-                    const usernameStr = String(client.Username || '').toLowerCase();
-                    const idStr = String(client.id || '').toLowerCase(); // Добавим поиск по ID
-                    
-                    // 2. Поиск по статусу
-                    const statusMapped = STATUS_MAP[client.Status] ? STATUS_MAP[client.Status].toLowerCase() : (client.Status ? client.Status.toLowerCase() : '');
-                    
-                    return tgIdStr.includes(searchTerm) ||
-                           keyStr.includes(searchTerm) ||
-                           keyLinkStr.includes(searchTerm) ||
-                           serverStr.includes(searchTerm) ||
-                           usernameStr.includes(searchTerm) ||
-                           idStr.includes(searchTerm) || // Поиск по ID
-                           statusMapped.includes(searchTerm);
-                });
-                renderClients(filteredClients);
-            });
-            
-            // Закрытие модальных окон
-            infoModalCloseBtn.addEventListener('click', () => closeModal(infoModal));
-            formModalCloseBtn.addEventListener('click', () => closeModal(formModal));
-
-            // Закрытие по клику вне модального окна
-            window.addEventListener('click', (event) => {
-                if (event.target === infoModal) {
-                    closeModal(infoModal);
-                }
-                if (event.target === formModal) {
-                    closeModal(formModal);
-                }
-            });
-
-
-            // Инициализация
-            async function initializeApp() {
-                clients = await loadClients();
-                renderClients(clients);
-            }
-
-            initializeApp();
-        });
-    </script>
+    function show(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+</script>
 </body>
 </html>
