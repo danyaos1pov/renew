@@ -28,19 +28,14 @@
 
         body {
             margin: 0;
-            /* ПРАВКА 3: Добавлены отступы Safe Area для iPhone */
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-            
+            padding: 0;
             background-color: var(--bg);
             color: white;
             height: 100dvh;
+            width: 100%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            width: 100%;
         }
 
         .bg-glow {
@@ -53,9 +48,17 @@
 
         .wrapper {
             flex: 1;
-            display: flex; flex-direction: column;
-            padding: 15px; max-width: 650px; margin: 0 auto; width: 100%;
+            display: flex; 
+            flex-direction: column;
+            max-width: 650px; 
+            margin: 0 auto; 
+            width: 100%;
             height: 100%;
+            /* ГЛАВНОЕ ИСПРАВЛЕНИЕ: Отступы для челок и камер */
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
+            padding-left: max(15px, env(safe-area-inset-left));
+            padding-right: max(15px, env(safe-area-inset-right));
         }
 
         .screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.2s ease-out; }
@@ -110,10 +113,6 @@
             padding: 5px;
         }
 
-        .hint-container::-webkit-scrollbar { width: 4px; }
-        .hint-container::-webkit-scrollbar-track { background: transparent; }
-        .hint-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-
         .hint-list { 
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -121,71 +120,40 @@
         }
 
         .hint-item { 
-            font-size: 0.7rem;
-            color: #fff;
-            padding: 10px 5px;
+            font-size: 0.7rem; color: #fff; padding: 10px 5px;
             background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 45px;
-            cursor: pointer;
-            line-height: 1.2;
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; min-height: 45px; display: flex; align-items: center; justify-content: center;
         }
 
-        .hint-item.crossed {
-            opacity: 0.2;
-            text-decoration: line-through;
-            transform: scale(0.95);
-            background: #000;
-        }
+        .hint-item.crossed { opacity: 0.2; text-decoration: line-through; background: #000; }
 
         .modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.97); z-index: 100; padding: 20px;
-            flex-direction: column; justify-content: center;
-            align-items: center;
+            flex-direction: column; justify-content: center; align-items: center;
             backdrop-filter: blur(15px);
         }
         .modal.active { display: flex; }
         .modal-content {
-            width: 100%;
-            max-width: 500px; background: #0f1218; border: 1px solid var(--accent);
-            border-radius: 24px; display: flex; flex-direction: column; max-height: 85vh;
-            overflow: hidden;
+            width: 100%; max-width: 500px; background: #0f1218; border: 1px solid var(--accent);
+            border-radius: 24px; display: flex; flex-direction: column; max-height: 85vh; overflow: hidden;
         }
+        .modal-body { flex: 1; overflow-y: auto; padding: 10px 20px; }
 
-        .modal-body { 
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px 20px;
-        }
+        .q-item { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; font-size: 0.85rem; }
 
-        .q-item { padding: 14px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; font-size: 0.85rem; }
-
-        .switch { position: relative;
-        display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0;
-        width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0;
-        left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px;
-        bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(20px); }
 
         .card-area { flex: 1; perspective: 1000px; margin: 20px 0; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s;
-        transform-style: preserve-3d; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
         .card-inner.flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .card-front { background: var(--card-dark); }
         .card-back { background: white; color: black; transform: rotateY(180deg); text-align: center; }
 
@@ -265,7 +233,6 @@
 </div>
 
 <script>
-    // ПРАВКА 4: Инициализация VK
     vkBridge.send("VKWebAppInit");
 
     const MY_LOCATIONS = ["Пляж", "Лес", "Кафе", "Зоопарк", "Аэропорт", "Школа", "Театр", "Рынок", "Гостиница", "Метро", "Больница", "Кинотеатр", "Парк аттракционов", "Музей", "Спортивная арена", "Ресторан", "Университет", "Ферма", "Торговый центр", "Вокзал", "Лодка", "Водопад", "Скейт-парк", "Автосервис", "Галерея", "Пустыня", "Ледник", "Балкон", "Гараж", "Книжный магазин", "Планетарий", "Кофейня", "Столовая", "Чердак", "Детский сад", "Порт", "Винодельня", "Луг", "Кабинет", "Аквариум", "Гостиная", "Ресторан национальной кухни", "Картинная галерея", "Стадион", "Лодж для отдыха", "Вечеринка", "Ледовая арена", "Оранжерея", "Терраса", "Автобус", "Пекарня", "Велосипедная дорожка", "Детская комната", "Футбольное поле", "Бар", "Поезд", "Ночной клуб", "Парк", "Гаражный комплекс", "Жилой дом", "Ледяная пещера", "Сад во дворе", "Кладовка", "Танцевальная студия", "Супермаркет", "Мастерская", "Рыбная фабрика", "Трамвай", "Садик", "Лаборатория", "Концертный зал", "Площадка для йоги", "Чердак дома", "Автозаправка", "Музыкальная школа", "Летний лагерь", "Ярмарка", "Парк развлечений", "Велосипед", "Фотостудия", "Пиратский корабль", "Гараж для машин", "Детский парк", "Станция метро", "Ледяной фьорд", "Сад с фонтанами", "Рыболовный причал", "Клуб настольных игр", "Станция электрички", "Тренажерный зал", "Подвал", "Гостевой дом", "Кузница", "Площадка для баскетбола", "Парк отдыха", "Пивоварня", "Автовокзал", "Чердак квартиры", "Кулинарная школа", "Театральная студия", "Деревенская ферма", "Летняя терраса", "Городская площадь", "Студия дизайна", "Киношкола", "Кабинет дома", "Аквариум с морскими животными", "Офис", "Песчаный пляж", "Сквер", "Детский лагерь", "Велосипедная дорожка в парке", "Клуб по интересам", "Городской сад", "Походная база", "Тропа в лесу", "Кузовной цех", "Рыбацкая деревня", "Музей науки", "Национальный парк", "Площадка для волейбола", "Автосалон", "Банкомат", "Рыбный рынок", "Парк под открытым небом", "Ледяная гора", "Пекарня с выпечкой", "Кабинет директора", "Сад с оранжереей", "Площадка для скейтборда", "Танцевальная школа", "Стадион для легкой атлетики", "Водная станция", "Почта", "Клуб для детей", "Автобусная остановка", "Площадка для тенниса", "Фабрика игрушек", "Рынок овощей и фруктов", "Библиотека", "Гостиница для туристов", "Велопарковка", "Кинотеатр под открытым небом", "Котельная", "Концертная площадка", "Летний кинотеатр", "Плантация фруктов", "Рыбный причал", "Игровая комната", "Тренажерная зона", "Сценическая площадка", "Картинная мастерская", "Летний сад", "Детский парк развлечений", "Автодром", "Рыбацкий домик", "Кофейня с террасой", "Водопад в горах", "Лесной массив", "Оранжерея с тропическими растениями", "Фабрика шоколада", "Пляж с песком", "Кабинет учителя", "Тренировочная площадка", "Скейт-парк у школы", "Вечеринка на открытом воздухе", "Городской сад с фонтанном", "Аквариум с медузами", "Стадион для футбола", "Лаборатория химии", "Театр для детей", "Музыкальная студия", "Велопарковка у парка", "Детская площадка во дворе", "Кинотеатр для взрослых", "Ферма с животными", "Рыбацкая лодка", "Летний кемпинг", "Автобусный парк", "Сквер с скамейками", "Чердак школы", "Городской рынок", "Ледяная пещера", "Сад с розами", "Пляж с пальмами", "Тренажерный зал дома", "Концертный парк", "Лесная тропа", "Фабрика пиццы", "Банковский офис", "Площадка для игры в футбол", "Кабинет директора школы", "Рыбная ферма", "Музыкальная площадка на улице", "Автозаправка возле дороги", "Скейт-парк на площади", "Гаражный бокс", "Детская комната дома", "Парк для прогулок", "Лодка на реке"];
@@ -351,7 +318,6 @@
         toggleModal('confirm-modal', false);
         clearInterval(state.t);
         show('setup');
-        // ПРАВКА 5: Закрытие Mini App
         vkBridge.send("VKWebAppClose", {"status": "success"}); 
     }
 
