@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SPYFALL MEGA PACK</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+
     <style>
         :root {
             --accent: #00f2ff;
@@ -52,11 +55,12 @@
 
         .screen { display: none; flex-direction: column; height: 100%; animation: fadeIn 0.2s ease-out; }
         .screen.active { display: flex; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        h1 { font-weight: 900; font-size: 2.2rem; margin: 0; text-align: center; letter-spacing: -1px; }
-        .tagline { color: var(--accent); font-size: 0.65rem; text-align: center; letter-spacing: 3px; margin-bottom: 25px; }
+        h1 { font-weight: 900; font-size: 2.2rem; margin: 0; text-align: center;
+        letter-spacing: -1px; }
+        .tagline { color: var(--accent); font-size: 0.65rem; text-align: center; letter-spacing: 3px;
+        margin-bottom: 25px; }
 
         .setting-box {
             background: var(--glass);
@@ -68,7 +72,7 @@
         .num-input {
             background: #000;
             border: 1px solid var(--accent); color: var(--accent);
-            border-radius: 8px; padding: 8px; width: 60px; text-align: center; 
+            border-radius: 8px; padding: 8px; width: 60px; text-align: center;
             font-size: 1.1rem; font-weight: bold; outline: none;
         }
 
@@ -79,17 +83,19 @@
             font-size: 0.9rem; cursor: pointer; transition: 0.2s; width: 100%;
         }
         .btn:active { transform: scale(0.96); filter: brightness(0.9); }
-        .btn-neon { background: var(--accent); box-shadow: 0 4px 15px rgba(0, 242, 255, 0.2); margin-top: auto; }
+        .btn-neon { background: var(--accent); box-shadow: 0 4px 15px rgba(0, 242, 255, 0.2);
+        margin-top: auto; }
         
         .btn-danger-outline { 
-            background: transparent; 
-            color: var(--danger); 
-            border: 1px solid rgba(255, 77, 77, 0.3); 
-            margin-top: 10px; 
-            padding: 12px; 
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            margin-top: 10px;
+            padding: 12px;
         }
 
-        #timer { font-size: 3.5rem; font-weight: 900; text-align: center; color: var(--accent); margin: 5px 0; }
+        #timer { font-size: 3.5rem; font-weight: 900; text-align: center; color: var(--accent);
+        margin: 5px 0; }
 
         .hint-container {
             flex: 1;
@@ -99,21 +105,20 @@
             padding: 5px;
         }
 
-        /* Кастомный скролл для списка локаций */
         .hint-container::-webkit-scrollbar { width: 4px; }
         .hint-container::-webkit-scrollbar-track { background: transparent; }
         .hint-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
         .hint-list { 
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
-            gap: 8px; 
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
         }
 
         .hint-item { 
             font-size: 0.7rem;
-            color: #fff; 
-            padding: 10px 5px; 
+            color: #fff;
+            padding: 10px 5px;
             background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
             border-radius: 10px;
             border: 1px solid rgba(255,255,255,0.1);
@@ -150,10 +155,9 @@
             overflow: hidden;
         }
 
-        /* Кастомное пролистывание для модального окна  */
         .modal-body { 
-            flex: 1; 
-            overflow-y: auto; 
+            flex: 1;
+            overflow-y: auto;
             padding: 10px 20px;
             scrollbar-width: thin;
             scrollbar-color: var(--accent) transparent;
@@ -162,24 +166,31 @@
         .modal-body::-webkit-scrollbar { width: 6px; }
         .modal-body::-webkit-scrollbar-track { background: transparent; }
         .modal-body::-webkit-scrollbar-thumb { 
-            background: var(--accent); 
+            background: var(--accent);
             border-radius: 10px;
             box-shadow: 0 0 10px var(--accent);
         }
 
-        .q-item { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; font-size: 0.85rem; }
+        .q-item { padding: 14px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; font-size: 0.85rem; }
 
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        .switch { position: relative;
+        display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0;
+        width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0;
+        left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px;
+        bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(20px); }
 
         .card-area { flex: 1; perspective: 1000px; margin: 20px 0; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s;
+        transform-style: preserve-3d; }
         .card-inner.flipped { transform: rotateY(180deg); }
-        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .card-front { background: var(--card-dark); }
         .card-back { background: white; color: black; transform: rotateY(180deg); text-align: center; }
 
@@ -259,12 +270,14 @@
 </div>
 
 <script>
+    // 2. ИНИЦИАЛИЗАЦИЯ VK BRIDGE
+    vkBridge.send("VKWebAppInit");
+
     const MY_LOCATIONS = ["Пляж", "Лес", "Кафе", "Зоопарк", "Аэропорт", "Школа", "Театр", "Рынок", "Гостиница", "Метро", "Больница", "Кинотеатр", "Парк аттракционов", "Музей", "Спортивная арена", "Ресторан", "Университет", "Ферма", "Торговый центр", "Вокзал", "Лодка", "Водопад", "Скейт-парк", "Автосервис", "Галерея", "Пустыня", "Ледник", "Балкон", "Гараж", "Книжный магазин", "Планетарий", "Кофейня", "Столовая", "Чердак", "Детский сад", "Порт", "Винодельня", "Луг", "Кабинет", "Аквариум", "Гостиная", "Ресторан национальной кухни", "Картинная галерея", "Стадион", "Лодж для отдыха", "Вечеринка", "Ледовая арена", "Оранжерея", "Терраса", "Автобус", "Пекарня", "Велосипедная дорожка", "Детская комната", "Футбольное поле", "Бар", "Поезд", "Ночной клуб", "Парк", "Гаражный комплекс", "Жилой дом", "Ледяная пещера", "Сад во дворе", "Кладовка", "Танцевальная студия", "Супермаркет", "Мастерская", "Рыбная фабрика", "Трамвай", "Садик", "Лаборатория", "Концертный зал", "Площадка для йоги", "Чердак дома", "Автозаправка", "Музыкальная школа", "Летний лагерь", "Ярмарка", "Парк развлечений", "Велосипед", "Фотостудия", "Пиратский корабль", "Гараж для машин", "Детский парк", "Станция метро", "Ледяной фьорд", "Сад с фонтанами", "Рыболовный причал", "Клуб настольных игр", "Станция электрички", "Тренажерный зал", "Подвал", "Гостевой дом", "Кузница", "Площадка для баскетбола", "Парк отдыха", "Пивоварня", "Автовокзал", "Чердак квартиры", "Кулинарная школа", "Театральная студия", "Деревенская ферма", "Летняя терраса", "Городская площадь", "Студия дизайна", "Киношкола", "Кабинет дома", "Аквариум с морскими животными", "Офис", "Песчаный пляж", "Сквер", "Детский лагерь", "Велосипедная дорожка в парке", "Клуб по интересам", "Городской сад", "Походная база", "Тропа в лесу", "Кузовной цех", "Рыбацкая деревня", "Музей науки", "Национальный парк", "Площадка для волейбола", "Автосалон", "Банкомат", "Рыбный рынок", "Парк под открытым небом", "Ледяная гора", "Пекарня с выпечкой", "Кабинет директора", "Сад с оранжереей", "Площадка для скейтборда", "Танцевальная школа", "Стадион для легкой атлетики", "Водная станция", "Почта", "Клуб для детей", "Автобусная остановка", "Площадка для тенниса", "Фабрика игрушек", "Рынок овощей и фруктов", "Библиотека", "Гостиница для туристов", "Велопарковка", "Кинотеатр под открытым небом", "Котельная", "Концертная площадка", "Летний кинотеатр", "Плантация фруктов", "Рыбный причал", "Игровая комната", "Тренажерная зона", "Сценическая площадка", "Картинная мастерская", "Летний сад", "Детский парк развлечений", "Автодром", "Рыбацкий домик", "Кофейня с террасой", "Водопад в горах", "Лесной массив", "Оранжерея с тропическими растениями", "Фабрика шоколада", "Пляж с песком", "Кабинет учителя", "Тренировочная площадка", "Скейт-парк у школы", "Вечеринка на открытом воздухе", "Городской сад с фонтанном", "Аквариум с медузами", "Стадион для футбола", "Лаборатория химии", "Театр для детей", "Музыкальная студия", "Велопарковка у парка", "Детская площадка во дворе", "Кинотеатр для взрослых", "Ферма с животными", "Рыбацкая лодка", "Летний кемпинг", "Автобусный парк", "Сквер с скамейками", "Чердак школы", "Городской рынок", "Ледяная пещера", "Сад с розами", "Пляж с пальмами", "Тренажерный зал дома", "Концертный парк", "Лесная тропа", "Фабрика пиццы", "Банковский офис", "Площадка для игры в футбол", "Кабинет директора школы", "Рыбная ферма", "Музыкальная площадка на улице", "Автозаправка возле дороги", "Скейт-парк на площади", "Гаражный бокс", "Детская комната дома", "Парк для прогулок", "Лодка на реке"];
-    const QUESTIONS = ["Можно ли здесь летать?", "Здесь готовят еду?", "Слышно ли много разговоров?", "Можно ли плавать здесь?", "Нужно ли показывать паспорт?", "Есть ли книги?", "Можно ли заниматься спортом?", "Можно ли строить что-то руками?", "Нужно ли иметь учебники?", "Есть ли здесь лекарства?", "Можно ли здесь встречать много людей?", "Нужно ли брать купальник?", "Есть ли столики?", "Можно ли здесь рисовать?", "Можно ли здесь делать операции?", "Солнечно ли здесь?", "Есть ли официанты?", "Можно ли смотреть фильмы?", "Здесь учат новому?", "Можно ли просто пройтись?", "Нужно ли носить форму?", "Можно ли здесь спать?", "Можно ли здесь покупать?", "Слышно ли музыку?", "Нужно ли брать спорт-одежду?", "Здесь продают еду на вынос?", "Можно ли здесь кататься на аттракционах?", "Нужно ли ждать очереди?", "Есть ли кассы?", "Можно ли смотреть экспонаты?", "Здесь много зелени?", "Есть ли сцена?", "Нужно ли покупать билеты?", "Можно ли здесь загорать?", "Здесь лечат людей?", "Можно ли здесь играть в игры?", "Нужно ли быть в тишине?", "Можно ли здесь есть мороженое?", "Нужно ли предъявлять документы?", "Можно ли фотографировать?", "Здесь продают сувениры?", "Можно ли встретить знаменитость?", "Здесь учат детей?", "Можно ли прыгать в воду?", "Есть ли здесь аптечка?", "Нужно ли покупать билет?", "Слышно ли здесь машины?", "Есть ли телевизоры?", "Есть ли указатели?", "Здесь продают одежду?", "Можно ли отдыхать на скамейках?", "Можно ли встретить друзей?", "Есть ли здесь фонтаны?", "Можно ли брать еду руками?", "Есть ли места для пикника?", "Нужно ли приносить свои вещи?", "Здесь лечат животных?", "Есть ли здесь выставки?", "Можно ли кататься на лодках?", "Здесь много людей?", "Есть ли здесь тренажеры?", "Здесь учат взрослых?", "Есть ли здесь врачи?", "Можно ли строить замки из песка?", "Нужно ли иметь билеты?", "Здесь можно сидеть на траве?", "Есть ли здесь кабинеты?", "Здесь продают сладости?", "Можно ли учиться новому?", "Можно ли кормить рыб?", "Можно ли здесь пить воду?", "Есть ли здесь кафе?", "Можно ли ловить рыбу?", "Есть ли спортивные площадки?", "Можно ли заниматься йогой?", "Есть ли здесь детские площадки?", "Можно ли наблюдать за животными?", "Есть ли парковка?", "Можно ли пить кофе?"];
+    const QUESTIONS = ["Можно ли здесь летать?", "Здесь готовят еду?", "Слышно ли много разговоров?", "Можно ли плавать здесь?", "Нужно ли показывать паспорт?", "Есть ли книги?", "Можно ли заниматься спортом?", "Можно ли строить что-то руками?", "Нужно ли иметь учебники?", "Есть ли здесь лекарства?", "Можно ли здесь встречать много людей?", "Нужно ли брать купальник?", "Есть ли столики?", "Можно ли здесь рисовать?", "Можно ли здесь делать операции?", "Солнечно ли здесь?", "Есть ли официанты?", "Можно ли смотреть фильмы?", "Здесь учат новому?", "Можно ли просто пройтись?", "Нужно ли носить форму?", "Можно ли здесь спать?", "Можно ли здесь покупать?", "Слышно ли музыку?", "Нужно ли брать спорт-одежду?", "Здесь продают еду на вынос?", "Можно ли здесь кататься на аттракционах?", "Нужно ли ждать очереди?", "Есть ли кассы?", "Можно ли смотреть экспонаты?", "Здесь много зелени?", "Есть ли сцена?", "Нужно ли покупать билеты?", "Можно ли здесь загорать?", "Здесь лечат людей?", "Можно ли здесь играть в игры?", "Нужно ли быть в тишине?", "Можно ли здесь есть мороженое?", "Нужно ли предъявлять документы?", "Можно ли фотографировать?", "Здесь продают сувениры?", "Можно ли встретить знаменитость?", "Здесь учат детей?", "Можно ли прыгать в воду?", "Есть ли здесь аптечка?", "Нужно ли покупать билет?", "Слышно ли здесь машины?", "Есть ли телевизоры?", "Есть ли указатели?", "Здесь продают одежду?", "Можно ли отдыхать на скамейках?", "Можно ли встретить друзей?", "Есть ли здесь фонтаны?", "Можно ли брать еду руками?", "Есть ли места для пикника?", "Нужно ли приносить свои вещи?", "Здесь лечат животных?", "Есть ли здесь выставки?", "Можно ли кататься на лодках?", "Здесь много людей?", "Есть ли здесь тренажеры?", "Здесь учат взрослых?", "Есть ли здесь врачи?", "Можно ли строить замки из песка?", "Нужно ли иметь билеты?", "Здесь можно сидеть на траве?", "Есть ли здесь кабинеты?", "Здесь продают сладости?", "Можно ли учиться новому?", "Можно ли кормить рыб?", "Можно ли здесь пить воду?", "Есть ли здесь кафе?", "Можно ли ловить рыбу?", "Есть ли спортивные площадки?", "Можно ли заниматься йоги?", "Есть ли здесь детские площадки?", "Можно ли наблюдать за животными?", "Есть ли парковка?", "Можно ли пить кофе?"];
     
     let state = { p: 0, spy: 0, word: "", cur: 0, t: null };
     let sessionLocations = [];
-
     document.getElementById('questions-list').innerHTML = QUESTIONS.map(q => `<div class="q-item">${q}</div>`).join('');
 
     function startGame() {
@@ -339,10 +352,14 @@
 
     function confirmReset() { toggleModal('confirm-modal', true); }
 
+    // 3. КОРРЕКТНОЕ ЗАКРЫТИЕ ПРИЛОЖЕНИЯ
     function resetApp() {
         toggleModal('confirm-modal', false);
         clearInterval(state.t);
         show('setup');
+        
+        // Отправка команды на закрытие Mini App
+        vkBridge.send("VKWebAppClose", {"status": "success"}); 
     }
 
     function show(id) {
